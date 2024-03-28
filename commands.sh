@@ -20,6 +20,7 @@ docker run -d \
     --name clickhouseDB \
     --net=app_net \
     -p 8123:8123 \
+    -p 8124:9000 \
     -v clickhouse_vol:/var/lib/clickhouse \
     clickhouse/clickhouse-server
 

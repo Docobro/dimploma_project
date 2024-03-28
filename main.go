@@ -39,9 +39,7 @@ func main() {
 	}
 
 	for rows.Next() {
-		var (
-			name, uuid string
-		)
+		var name, uuid string
 		if err := rows.Scan(
 			&name,
 			&uuid,
