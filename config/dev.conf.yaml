@@ -1,0 +1,23 @@
+app:
+  name: "crypto"
+  env: "dev"
+  version: "v1"
+
+http:
+  url: "https://crypto-scanner-vlad.com"
+  port: 8005
+  host: "localhost"
+  read_timeout: "3s"
+  write_timeout: "3s"
+
+sql:
+  host: "clickhouseDB"
+  port: "8124"
+  database: "cryptowallet"
+  user: "default"
+  password: ""
+  read_timeout: "4s"
+  write_timeout: "4s"
+  timeout: "4s"
+
+

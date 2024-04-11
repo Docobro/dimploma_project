@@ -4,19 +4,25 @@ import (
 	"log"
 
 	"github.com/docobro/dimploma_project/internal/app"
-	"github.com/docobro/dimploma_project/internal/db/queries"
+	"github.com/hanagantig/gracy"
+)
+
+var (
+	version    = "dev"
+	configPath = "./conf.yaml"
 )
 
 func main() {
-	a := app.NewApp()
-	err := a.Run()
+	a, err := app.New(configPath)
 	if err != nil {
-		log.Fatalf("failed to run app:%v", err)
+		log.Fatal(err)
 	}
-	res, err := queries.User.FilterWithNameAndRole("john", "admim")
+	err = a.StartHTTPServer()
 	if err != nil {
-		log.Println("error:", err.Error())
+		log.Fatal(err)
 	}
-	log.Println(res)
-	log.Println("program has started")
+	err = gracy.Wait()
+	if err != nil {
+		log.Fatal("failed to gracefully shutdown")
+	}
 }
