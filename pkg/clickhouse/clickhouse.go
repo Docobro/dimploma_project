@@ -28,7 +28,7 @@ func New(c *Config) (*Clickhouse, error) {
 		conn, err = clickhouse.Open(&clickhouse.Options{
 			Addr: []string{"localhost:8124"},
 			Auth: clickhouse.Auth{
-				Database: "CryptoWallet",
+				Database: "cryptowallet",
 				Username: "default",
 				Password: "",
 			},

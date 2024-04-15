@@ -24,27 +24,6 @@ type OrderedMap struct {
 }
 
 // Функция для создания OrderedMap
-func NewOrderedMap() *OrderedMap {
-	return &OrderedMap{
-		coins: make([]string, 0),
-		Data:  make(map[string]float64),
-	}
-}
-
-// Функция для добавления элемента в OrderedMap
-func (m *OrderedMap) Add(coin string, price float64) {
-	m.coins = append(m.coins, coin)
-	m.Data[coin] = price
-}
-
-// Функция для получения значений в порядке добавления
-func (m *OrderedMap) Values() []float64 {
-	var values []float64
-	for _, coin := range m.coins {
-		values = append(values, m.Data[coin])
-	}
-	return values
-}
 
 // Функция для получения текущей цены для нескольких криптовалют
 func GetCurrentPrices(coins []string) (*OrderedMap, error) {

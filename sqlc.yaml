@@ -2,6 +2,8 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "./internal/orm/queries"
+    database:
+      uri: "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
     schema: "./migrations"
     gen:
       go:
