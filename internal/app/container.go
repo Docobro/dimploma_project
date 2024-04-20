@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
+	"github.com/docobro/dimploma_project/internal/adapters/clickhouse"
 	"github.com/docobro/dimploma_project/internal/adapters/cryptopackage"
-	"github.com/docobro/dimploma_project/internal/adapters/sqlc"
 	"github.com/docobro/dimploma_project/internal/usecase"
 )
 
@@ -30,8 +30,8 @@ func (c *Container) GetUseCase() *usecase.Usecase {
 	return usecase.New(c.deps[ClickhouseRepo])
 }
 
-func (c *Container) GetClickhouseRepo(driver *driver.Conn) *sqlc.Repository {
-	return sqlc.New(driver, c.GetCryptoRepo(""))
+func (c *Container) GetClickhouseRepo(driver *driver.Conn) *clickhouse.Repository {
+	return clickhouse.New(driver, c.GetCryptoRepo(""))
 }
 
 func (c *Container) GetCryptoRepo(url string) *cryptopackage.Repository {

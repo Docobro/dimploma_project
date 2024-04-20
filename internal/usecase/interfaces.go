@@ -1,3 +1,3 @@
 package usecase
 
-type Sqlc interface{}
+type ClickhouseRepo interface{}

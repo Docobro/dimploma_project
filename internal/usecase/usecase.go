@@ -2,10 +2,10 @@ package usecase
 
 // load your adapters
 type Usecase struct {
-	storage Sqlc
+	storage ClickhouseRepo
 }
 
-func New(storage Sqlc) *Usecase {
+func New(storage ClickhouseRepo) *Usecase {
 	return &Usecase{
 		storage: storage,
 	}
