@@ -6,7 +6,7 @@ import (
 )
 
 type cryptoAdapterRepo interface {
-	GetCurrencies(coins []string) (map[string]*entity.Currency, error)
+	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
 }
 type Repository struct {
 	conn driver.Conn

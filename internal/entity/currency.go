@@ -7,3 +7,8 @@ type Currency struct {
 	MaxSupply  int    `json:"max_supply"`
 	Desciption string `json:"desciption"`
 }
+
+type Coin struct {
+	Prices map[string]float64
+	Name   string
+}

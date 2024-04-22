@@ -9,10 +9,9 @@ type (
 	Key struct {
 		Timestamp int64
 
-		Country    string
-		Os         string
-		Browser    string
-		CampaignId uint32
+		Coin     *Coin
+		CoinName string
+		Price    float64
 	}
 
 	Value struct {

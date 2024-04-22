@@ -13,6 +13,15 @@ const (
 	defaultCapacity = 1000
 )
 
+//type Price struct {
+//	ID        int64            `json:"id"`
+//	CryptoID  int64            `json:"crypto_id"`
+//	Value     pgtype.Numeric   `json:"value"`
+//	MarketCap int32            `json:"market_cap"`
+//	TimeDiff  interface{}      `json:"time_diff"`
+//	CreatedAt pgtype.Timestamp `json:"created_at"`
+//}
+
 type (
 	Writer interface {
 		Insert(rows entity.Rows) error

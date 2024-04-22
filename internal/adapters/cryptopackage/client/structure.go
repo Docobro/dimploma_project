@@ -12,6 +12,12 @@ type CoinPrice struct {
 
 // Структура для хранения порядка криптовалют
 type OrderedMap struct {
-	coins []string
+	Coins []string
 	Data  map[string]float64
 }
+
+type (
+	Coin struct {
+		Prices map[string]float64
+	}
+)

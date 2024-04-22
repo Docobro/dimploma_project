@@ -20,7 +20,10 @@ func New(url string) *Client {
 	}
 }
 
-func (c *Client) GetCurrentPrices(coins []string) (*OrderedMap, error) {
+// return currency price in map where
+// Key = coin such as BTC,ETH etc..
+// Value is map of prices such as USD EUR
+func (c *Client) GetCurrentPrices(coins []string) (map[string]Coin, error) {
 	coinsParam := strings.Join(coins, ",")
 	url := fmt.Sprintf("%s/pricemulti?fsyms=%s&tsyms=USD", c.url, coinsParam)
 	resp, err := http.Get(url)
@@ -33,34 +36,26 @@ func (c *Client) GetCurrentPrices(coins []string) (*OrderedMap, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&coinPrices); err != nil {
 		return nil, err
 	}
-
-	orderedMap := newOrderedMap()
+	res := make(map[string]Coin, len(coinPrices))
 	for _, coin := range coins {
 		if priceData, ok := coinPrices[coin]; ok {
-			orderedMap.Add(coin, priceData["USD"])
+			res[coin].Prices["USD"] = priceData["USD"]
 		}
 	}
 
-	return orderedMap, nil
-}
-
-func newOrderedMap() *OrderedMap {
-	return &OrderedMap{
-		coins: make([]string, 0),
-		Data:  make(map[string]float64),
-	}
+	return res, nil
 }
 
 // Функция для добавления элемента в OrderedMap
 func (m *OrderedMap) Add(coin string, price float64) {
-	m.coins = append(m.coins, coin)
+	m.Coins = append(m.Coins, coin)
 	m.Data[coin] = price
 }
 
 // Функция для получения значений в порядке добавления
 func (m *OrderedMap) Values() []float64 {
 	var values []float64
-	for _, coin := range m.coins {
+	for _, coin := range m.Coins {
 		values = append(values, m.Data[coin])
 	}
 	return values

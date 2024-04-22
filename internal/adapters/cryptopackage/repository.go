@@ -18,15 +18,26 @@ func New(url string) *Repository {
 	}
 }
 
-func (r *Repository) GetCurrencies(coins []string) (map[string]*entity.Currency, error) {
+// return coins where string is coin_name
+func (r *Repository) GetCurrencies(coins []string) (map[string]*entity.Coin, error) {
+	currencies := make(map[string]*entity.Coin, len(coins))
+	if len(coins) == 0 {
+		return currencies, errors.New("coins lengt must be at least 1")
+	}
+
+	// get currencies
 	res, err := r.client.GetCurrentPrices(coins)
 	if err != nil {
-		return nil, errors.New("failed to execute currency prices")
+		return nil, errors.New("adapters - cryptopackage - GetCurrencies err:%v" + err.Error())
 	}
-	currencies := make(map[string]*entity.Currency, len(res.Data))
-	for i, v := range res.Data {
-		currencies[i] = &entity.Currency{
-			MaxSupply: int(v),
+	// map over and parse into entity value
+	for _, coin := range coins {
+		currencies[coin] = nil
+		if _, ok := res[coin]; ok {
+			currencies[coin] = &entity.Coin{
+				Name: coin,
+			}
+			currencies[coin].Prices = res[coin].Prices
 		}
 	}
 	return currencies, nil
