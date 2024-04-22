@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/docobro/dimploma_project/internal/config"
 	"github.com/docobro/dimploma_project/pkg/clickhouse"
@@ -10,10 +9,9 @@ import (
 )
 
 type App struct {
-	l    logger.Logger
-	cfg  *config.Config
-	c    *Container
-	http *http.Client
+	l   logger.Logger
+	cfg *config.Config
+	c   *Container
 }
 
 func New(configpath string) (*App, error) {
@@ -30,9 +28,6 @@ func New(configpath string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	httpClient := app.newHttpClient()
-	app.http = httpClient
 
 	// create connection to database
 	connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
