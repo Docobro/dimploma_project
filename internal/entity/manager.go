@@ -8,15 +8,17 @@ import "time"
 type (
 	Key struct {
 		Timestamp int64
-
-		Coin     *Coin
-		CoinName string
-		Price    float64
 	}
 
 	Value struct {
 		Requests    int64
 		Impressions int64
+
+		PriceIndex  float64
+		VolumeIndex float64
+		Coin        *Coin
+		CoinName    string
+		Price       float64
 	}
 
 	Rows map[Key]Value

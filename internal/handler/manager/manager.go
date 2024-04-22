@@ -25,6 +25,7 @@ const (
 type (
 	Writer interface {
 		Insert(rows entity.Rows) error
+		CreateIndices(indices []entity.Indices) error
 	}
 
 	Manager struct {
@@ -99,6 +100,18 @@ func (m *Manager) startInserting() {
 	if len(rows) == 0 {
 		log.Println("No stats rows, skipping")
 		return
+	}
+
+	indices := make([]entity.Indices, 0)
+	for _, v := range rows {
+		indices = append(indices, entity.Indices{
+			CryptoName: v.CoinName,
+			Price:      entity.PriceIndex{Value: v.Price},
+			Volume:     entity.VolumeIndex{Value: v.VolumeIndex},
+		})
+	}
+	if err := m.writer.CreateIndices(indices); err != nil {
+		log.Println("failed to create indices err:" + err.Error())
 	}
 
 	if err := m.writer.Insert(rows); err != nil {
