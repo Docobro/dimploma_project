@@ -7,8 +7,9 @@ type Currency struct {
 }
 
 type Coin struct {
-	Prices map[string]float64
-	Name   string
+	Prices    map[string]float64
+	MarketCap uint64
+	Name      string
 }
 
 type Indices struct {
@@ -23,4 +24,19 @@ type VolumeIndex struct {
 
 type PriceIndex struct {
 	Value float64
+}
+
+type Volume struct {
+	CryptoName string
+	Value      float64
+}
+
+type Transaction struct {
+	CryptoName string
+	Value      uint64
+}
+
+type Supplies struct {
+	CryptoName string
+	Value      uint64
 }
