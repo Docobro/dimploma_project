@@ -67,7 +67,6 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	}
 
 	for _, v := range indices {
-		log.Printf("crypto_name:%v price:%v", v.CryptoName, v.Price.Value)
 		err := batch.Append(uuid.New(), v.Price.Value, v.Volume.Value, time.Now(), tokens[v.CryptoName].ID)
 		if err != nil {
 			return err
@@ -81,34 +80,6 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 
 	if ok := batch.IsSent(); !ok {
 		return errors.New("batch is not sended")
-	}
-
-	return nil
-}
-
-// добавление текущих цен и маркет капов
-func (r *Repository) CreatePrices(prices []entity.Coin) error {
-	tokens, err := r.GetCryptoTokens()
-	if err != nil {
-		return err
-	}
-
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO prices(id, crypto_id, value, market_cap, time_diff , created_at)")
-	if err != nil {
-		return err
-	}
-
-	for _, v := range prices {
-		err := batch.Append(uuid.New(), tokens[v.Name].ID, v.Prices, v.MarketCap, time.Now(), time.Now())
-		// формат для time_diff нужно поменять на что-то другое !!!!!!
-		if err != nil {
-			return err
-		}
-	}
-
-	err = batch.Send()
-	if err != nil {
-		return err
 	}
 
 	return nil

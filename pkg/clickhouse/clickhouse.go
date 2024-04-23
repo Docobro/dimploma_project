@@ -24,7 +24,7 @@ func New(c *Config) (*Clickhouse, error) {
 	var (
 		ctx       = context.Background()
 		conn, err = clickhouse.Open(&clickhouse.Options{
-			Addr: []string{"localhost:8124"},
+			Addr: []string{"host.docker.internal:8124"},
 			Auth: clickhouse.Auth{
 				Database: "cryptowallet",
 				Username: "default",

@@ -22,7 +22,7 @@ func (a *App) StartHTTPServer() error {
 func (a *App) startHTTPServer() {
 	handler := v1.NewHandler(a.c.GetUseCase(), a.l)
 	router := http.NewRouter()
-	router.WithHandler(handler, a.l)
+	router.WithHandler(handler, a.l).WithMetrics()
 
 	srv := http.NewServer(a.cfg.HTTPConfig)
 	srv.RegisterRoutes(router)

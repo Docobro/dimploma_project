@@ -10,8 +10,29 @@ services:
       - ../migrations:/app/migrations
     networks:
       - crypto-network 
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "19090:9090"
+    networks:
+      - crypto-network 
+
+  grafana:
+    image: grafana/grafana-oss:9.4.3
+    ports:
+      - "13000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - crypto-network 
+
 networks:
   crypto-network:
     name: app_net
     external: true
 
+volumes:
+  grafana-data:

@@ -34,7 +34,7 @@ func New(configpath string) (*App, error) {
 	}
 
 	// create connection to database
-	connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
+	connStrf := "clickhouse://clickhouseDB:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
 	_ = fmt.Sprintf("clickhouse://%v:%v?username=%v&password=%v&database=%v", config.SQLConfig.Host, config.SQLConfig.Port, config.User, config.Password, config.DBName)
 	pg, err := clickhouse.New(&clickhouse.Config{
 		Host:     config.SQLConfig.Host,
@@ -50,7 +50,7 @@ func New(configpath string) (*App, error) {
 	// init usecases
 	app.c = NewContainer(&pg.Conn, app.cfg.CryptoConfig)
 
-	mn := manager.NewManager(app.c.GetClickhouseRepo(&pg.Conn), time.Second*10)
+	mn := manager.NewManager(app.c.GetClickhouseRepo(&pg.Conn), time.Second*16)
 	gracy.AddCallback(func() error {
 		mn.Stop()
 		return nil

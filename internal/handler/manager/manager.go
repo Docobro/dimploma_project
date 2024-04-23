@@ -13,19 +13,11 @@ const (
 	defaultCapacity = 1000
 )
 
-//type Price struct {
-//	ID        int64            `json:"id"`
-//	CryptoID  int64            `json:"crypto_id"`
-//	Value     pgtype.Numeric   `json:"value"`
-//	MarketCap int32            `json:"market_cap"`
-//	TimeDiff  interface{}      `json:"time_diff"`
-//	CreatedAt pgtype.Timestamp `json:"created_at"`
-//}
-
 type (
 	Writer interface {
 		Insert(rows entity.Rows) error
 		CreateIndices(indices []entity.Indices) error
+		CreatePrices(prices []entity.Coin) error
 	}
 
 	Manager struct {
@@ -108,20 +100,30 @@ func (m *Manager) startInserting() {
 	}
 
 	indices := []entity.Indices{}
+	prices := []entity.Coin{}
 	for _, v := range rows {
 		indices = append(indices, entity.Indices{
 			CryptoName: v.CoinName,
 			Price:      entity.PriceIndex{Value: v.PriceIndex},
 			Volume:     entity.VolumeIndex{Value: v.VolumeIndex},
 		})
+		prices = append(prices, *v.Coin)
 	}
-	if err := m.writer.CreateIndices(indices); err != nil {
+	err := m.writer.CreateIndices(indices)
+	if err != nil {
 		log.Println("failed to create indices err:" + err.Error())
 		m.AppendRows(rows)
 		return
 	}
 
-	if err := m.writer.Insert(rows); err != nil {
+	err = m.writer.CreatePrices(prices)
+	if err != nil {
+		log.Println("failed to create prices err:" + err.Error())
+		m.AppendRows(rows)
+	}
+
+	err = m.writer.Insert(rows)
+	if err != nil {
 		log.Printf("Failed to write stats: %v\n", err)
 		log.Printf("Return stats rows to map: %d\n", len(rows))
 

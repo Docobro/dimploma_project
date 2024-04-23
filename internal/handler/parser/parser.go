@@ -70,7 +70,7 @@ func (m *Parser) loop() {
 func (m *Parser) startParsing() {
 	log.Println("Start parsing crypto remote!")
 
-	coins := []string{"BTC"}
+	coins := []string{"BTC", "ETH", "USDT", "TON"}
 	currencies, err := m.uc.GetCurrencies(coins)
 	if err != nil {
 		log.Printf("Failed to parse Currencies err:%v", err)

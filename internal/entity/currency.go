@@ -11,7 +11,7 @@ type Currency struct {
 type Coin struct {
 	Name      string
 	Prices    map[string]float64
-	MarketCap uint64
+	MarketCap int32
 }
 
 type Indices struct {

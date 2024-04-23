@@ -21,7 +21,7 @@ docker-build:  ### build  image
 .PHONY: docker-build
 
 compose-up: ### Run docker-compose for the dev env
-	docker compose -f ./build/docker-compose.yml --env-file ./config/dev.env -p crypto_diploma up --build -d crypto && docker compose logs -f
+	docker compose -f ./build/docker-compose.yml --env-file ./config/dev.env -p crypto_diploma up -d && docker compose logs -f
 .PHONY: compose-up
 
 run: ## start dev compose container

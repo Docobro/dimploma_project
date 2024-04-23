@@ -13,7 +13,11 @@ var (
 )
 
 func main() {
-	_, err := app.New(configPath)
+	a, err := app.New(configPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = a.StartHTTPServer()
 	if err != nil {
 		log.Fatal(err)
 	}
