@@ -49,3 +49,15 @@ func GetCurrentPrices(coins []string) (*OrderedMap, error) {
 
 	return orderedMap, nil
 }
+
+func NewOrderedMap() *OrderedMap {
+	return &OrderedMap{
+		coins: []string{},
+		Data:  map[string]float64{},
+	}
+}
+
+func (om *OrderedMap) Add(coin string, price float64) {
+	om.coins = append(om.coins, coin)
+	om.Data[coin] = price
+}

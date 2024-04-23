@@ -49,6 +49,11 @@ func (m *Parser) Start() {
 	go m.loop()
 }
 
+func (m *Parser) Stop() {
+	m.cancel()
+	log.Println("Parser has stopped!")
+}
+
 func (m *Parser) loop() {
 	for {
 		select {

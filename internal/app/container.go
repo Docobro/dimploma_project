@@ -31,7 +31,9 @@ func (c *Container) GetUseCase() *usecase.Usecase {
 }
 
 func (c *Container) GetClickhouseRepo(driver *driver.Conn) *clickhouse.Repository {
-	return clickhouse.New(driver, c.GetCryptoRepo(""))
+	repo := clickhouse.New(driver, c.GetCryptoRepo(""))
+	c.deps[ClickhouseRepo] = repo
+	return repo
 }
 
 func (c *Container) GetCryptoRepo(url string) *cryptopackage.Repository {

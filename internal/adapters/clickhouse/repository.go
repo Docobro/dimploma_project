@@ -2,6 +2,7 @@ package clickhouse
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
@@ -12,9 +13,8 @@ import (
 
 type cryptoAdapterRepo interface {
 	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
-	GetPriceIndex() (uint, error)
-	GetVolumeIndex() (uint, error)
 }
+
 type Repository struct {
 	conn driver.Conn
 	cryptoAdapterRepo
@@ -27,7 +27,8 @@ func New(clickhouse *driver.Conn, adapterCrypto cryptoAdapterRepo) *Repository {
 }
 
 func (repository *Repository) Insert(rows entity.Rows) error {
-	panic("not implemented") // TODO: Implement
+	log.Printf("mock inserting rows:%v", rows)
+	return nil
 }
 
 func (r *Repository) GetCurrencies() (*[]entity.Currency, error) {

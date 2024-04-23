@@ -80,6 +80,11 @@ func (m *Manager) Start() {
 	go m.loop()
 }
 
+func (m *Manager) Stop() {
+	m.cancel()
+	log.Println("Manager has stopped!")
+}
+
 func (m *Manager) loop() {
 	for {
 		select {

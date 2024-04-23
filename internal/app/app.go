@@ -2,10 +2,14 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/docobro/dimploma_project/internal/config"
+	"github.com/docobro/dimploma_project/internal/handler/manager"
+	"github.com/docobro/dimploma_project/internal/handler/parser"
 	"github.com/docobro/dimploma_project/pkg/clickhouse"
 	"github.com/docobro/dimploma_project/pkg/logger"
+	"github.com/hanagantig/gracy"
 )
 
 type App struct {
@@ -45,5 +49,22 @@ func New(configpath string) (*App, error) {
 	runMigrations(connStrf)
 	// init usecases
 	app.c = NewContainer(&pg.Conn)
+
+	mn := manager.NewManager(app.c.GetClickhouseRepo(&pg.Conn), time.Second*10)
+	gracy.AddCallback(func() error {
+		mn.Stop()
+		return nil
+	})
+
+	mn.Start()
+
+	parser := parser.NewParser(app.c.GetUseCase(), mn, time.Second*5)
+	gracy.AddCallback(func() error {
+		parser.Stop()
+		return nil
+	})
+
+	parser.Start()
+
 	return app, nil
 }
