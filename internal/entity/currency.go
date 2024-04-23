@@ -1,15 +1,17 @@
 package entity
 
+import "github.com/google/uuid"
+
 type Currency struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
-	Code string `json:"code"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+	Code string    `json:"code"`
 }
 
 type Coin struct {
+	Name      string
 	Prices    map[string]float64
 	MarketCap uint64
-	Name      string
 }
 
 type Indices struct {
@@ -19,11 +21,11 @@ type Indices struct {
 }
 
 type VolumeIndex struct {
-	Value float64
+	Value float32
 }
 
 type PriceIndex struct {
-	Value float64
+	Value int32
 }
 
 type Volume struct {

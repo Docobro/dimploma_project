@@ -2,6 +2,7 @@ package clickhouse
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -11,18 +12,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type cryptoAdapterRepo interface {
-	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
-}
-
 type Repository struct {
 	conn driver.Conn
-	cryptoAdapterRepo
 }
 
-func New(clickhouse *driver.Conn, adapterCrypto cryptoAdapterRepo) *Repository {
+func New(clickhouse *driver.Conn) *Repository {
+	if clickhouse == nil {
+		return nil
+	}
 	return &Repository{
-		cryptoAdapterRepo: adapterCrypto,
+		conn: *clickhouse,
 	}
 }
 
@@ -31,29 +30,22 @@ func (repository *Repository) Insert(rows entity.Rows) error {
 	return nil
 }
 
-func (r *Repository) GetCurrencies() (*[]entity.Currency, error) {
-	return nil, nil
-}
-
 func (r *Repository) GetCryptoTokens() (map[string]entity.Currency, error) {
-	getTokenQuery := "SELECT * FROM currencies"
-	rows, err := r.conn.Query(context.Background(), getTokenQuery)
+	var cols []orm.Currency
+	getTokenQuery := "SELECT * FROM cryptowallet.currencies"
+	err := r.conn.Select(context.Background(), &cols, getTokenQuery)
 	if err != nil {
+		log.Printf("clickhouse_repo Query err:%v\n", err)
 		return nil, err
 	}
 	res := make(map[string]entity.Currency)
-	for rows.Next() {
-		var col1 orm.Currency
-		if err := rows.Scan(&col1); err != nil {
-			return nil, err
-		}
-		res[col1.Name] = entity.Currency{
-			ID:   uint64(col1.ID),
-			Name: col1.Name,
-			Code: col1.Code,
+	for _, v := range cols {
+		res[v.Name] = entity.Currency{
+			ID:   v.ID,
+			Name: v.Name,
+			Code: v.Code,
 		}
 	}
-	rows.Close()
 	return res, nil
 }
 
@@ -61,18 +53,22 @@ func (r *Repository) GetCryptoTokens() (map[string]entity.Currency, error) {
 
 // добавление индексов
 func (r *Repository) CreateIndices(indices []entity.Indices) error {
+	if len(indices) == 0 {
+		return errors.New("nothing to insert. abort")
+	}
 	tokens, err := r.GetCryptoTokens()
 	if err != nil {
 		return err
 	}
 
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO indices(id, crypto_id, price_index, volume_index, created_at)")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO indices")
 	if err != nil {
 		return err
 	}
 
 	for _, v := range indices {
-		err := batch.Append(uuid.New(), tokens[v.CryptoName].ID, v.Price, v.Volume, time.Now())
+		log.Printf("crypto_name:%v price:%v", v.CryptoName, v.Price.Value)
+		err := batch.Append(uuid.New(), v.Price.Value, v.Volume.Value, time.Now(), tokens[v.CryptoName].ID)
 		if err != nil {
 			return err
 		}
@@ -81,6 +77,10 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	err = batch.Send()
 	if err != nil {
 		return err
+	}
+
+	if ok := batch.IsSent(); !ok {
+		return errors.New("batch is not sended")
 	}
 
 	return nil

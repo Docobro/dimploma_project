@@ -11,14 +11,11 @@ type (
 	}
 
 	Value struct {
-		Requests    int64
-		Impressions int64
-
-		PriceIndex  float64
-		VolumeIndex float64
+		PriceIndex  int32
+		VolumeIndex float32
 		Coin        *Coin
 		CoinName    string
-		Price       float64
+		Price       int64
 	}
 
 	Rows map[Key]Value
@@ -32,8 +29,10 @@ func NewKey(k Key) Key {
 
 func (a Value) Assign(b Value) Value {
 	res := a
-	res.Requests += b.Requests
-	res.Impressions += b.Impressions
-
+	res.Coin = b.Coin
+	res.CoinName = b.CoinName
+	res.Price = b.Price
+	res.PriceIndex = b.PriceIndex
+	res.VolumeIndex = b.VolumeIndex
 	return res
 }

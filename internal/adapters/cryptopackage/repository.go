@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/docobro/dimploma_project/internal/adapters/cryptopackage/client"
+	"github.com/docobro/dimploma_project/internal/config"
 	"github.com/docobro/dimploma_project/internal/entity"
 )
 
@@ -12,9 +13,9 @@ type Repository struct {
 	client *client.Client
 }
 
-func New(url string) *Repository {
+func New(cfg config.CryptoConfig) *Repository {
 	return &Repository{
-		client: client.New(url),
+		client: client.New(cfg.Url, cfg.Key),
 	}
 }
 
@@ -35,9 +36,10 @@ func (r *Repository) GetCurrencies(coins []string) (map[string]*entity.Coin, err
 		currencies[coin] = nil
 		if _, ok := res[coin]; ok {
 			currencies[coin] = &entity.Coin{
-				Name: coin,
+				Name:      coin,
+				Prices:    res[coin].Prices,
+				MarketCap: 30487,
 			}
-			currencies[coin].Prices = res[coin].Prices
 		}
 	}
 	return currencies, nil

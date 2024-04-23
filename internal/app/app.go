@@ -48,7 +48,7 @@ func New(configpath string) (*App, error) {
 	}
 	runMigrations(connStrf)
 	// init usecases
-	app.c = NewContainer(&pg.Conn)
+	app.c = NewContainer(&pg.Conn, app.cfg.CryptoConfig)
 
 	mn := manager.NewManager(app.c.GetClickhouseRepo(&pg.Conn), time.Second*10)
 	gracy.AddCallback(func() error {

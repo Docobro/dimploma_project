@@ -16,24 +16,25 @@ func (uc *Usecase) GetCurrencies(coins []string) (map[string]*entity.Coin, error
 	return uc.cryptoRepo.GetCurrencies(coins)
 }
 
-func (uc *Usecase) GetPriceIndices(coins []string) (map[string]float64, error) {
-	res := make(map[string]float64, len(coins))
+func (uc *Usecase) GetPriceIndices(coins []string) (map[string]int32, error) {
+	res := make(map[string]int32, len(coins))
 	for _, v := range coins {
-		res[v] = rand.Float64()
+		res[v] = rand.Int31()
 	}
 	return res, nil
 }
 
-func (uc *Usecase) GetVolumeIndices(coins []string) (map[string]float64, error) {
-	res := make(map[string]float64, len(coins))
+func (uc *Usecase) GetVolumeIndices(coins []string) (map[string]float32, error) {
+	res := make(map[string]float32, len(coins))
 	for _, v := range coins {
-		res[v] = rand.Float64()
+		res[v] = rand.Float32()
 	}
 	return res, nil
 }
 
-func New(storage ClickhouseRepo) *Usecase {
+func New(storage ClickhouseRepo, cryptoRepo CryptoRepo) *Usecase {
 	return &Usecase{
-		storage: storage,
+		storage:    storage,
+		cryptoRepo: cryptoRepo,
 	}
 }

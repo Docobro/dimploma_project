@@ -5,15 +5,16 @@
 package orm
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Currency struct {
-	ID         int64       `json:"id"`
-	Name       string      `json:"name"`
-	Code       string      `json:"code"`
-	MaxSupply  pgtype.Int8 `json:"max_supply"`
-	Desciption pgtype.Text `json:"desciption"`
+	ID          uuid.UUID `json:"id" ch:"id"`
+	Name        string    `json:"name" ch:"name"`
+	Code        string    `json:"code" ch:"code"`
+	MaxSupply   int64     `json:"max_supply" ch:"max_supply"`
+	Description string    `json:"description" ch:"description"`
 }
 
 type Index struct {

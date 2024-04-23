@@ -12,8 +12,8 @@ import (
 
 type UseCase interface {
 	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
-	GetPriceIndices(coins []string) (map[string]float64, error)
-	GetVolumeIndices(coins []string) (map[string]float64, error)
+	GetPriceIndices(coins []string) (map[string]int32, error)
+	GetVolumeIndices(coins []string) (map[string]float32, error)
 }
 
 // usecase operation with things that we will parse per time
@@ -68,9 +68,9 @@ func (m *Parser) loop() {
 }
 
 func (m *Parser) startParsing() {
-	log.Println("Parser crypto parsing")
+	log.Println("Start parsing crypto remote!")
 
-	coins := []string{"BTC", "ETH", "TON"}
+	coins := []string{"BTC"}
 	currencies, err := m.uc.GetCurrencies(coins)
 	if err != nil {
 		log.Printf("Failed to parse Currencies err:%v", err)
@@ -90,8 +90,8 @@ func (m *Parser) startParsing() {
 			Timestamp: time.Now().Unix(),
 		})
 		statsValue := entity.Value{
-			Requests:    1,
 			Coin:        v,
+			CoinName:    v.Name,
 			PriceIndex:  priceIndices[v.Name],
 			VolumeIndex: volumeIndices[v.Name],
 		}

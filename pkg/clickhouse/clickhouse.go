@@ -3,7 +3,6 @@ package clickhouse
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
@@ -22,7 +21,6 @@ type Config struct {
 }
 
 func New(c *Config) (*Clickhouse, error) {
-	log.Println(c)
 	var (
 		ctx       = context.Background()
 		conn, err = clickhouse.Open(&clickhouse.Options{

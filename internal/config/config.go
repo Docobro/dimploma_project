@@ -40,10 +40,15 @@ type App struct {
 	Version string
 }
 
+type CryptoConfig struct {
+	Url string
+	Key string
+}
 type Config struct {
 	App
 	HTTPConfig
 	SQLConfig
+	CryptoConfig
 }
 
 func New(filepath string) (*Config, error) {
@@ -87,6 +92,10 @@ func New(filepath string) (*Config, error) {
 			ParseTime:         true,
 			Timezone:          "Europe/Moscow",
 			Collation:         "",
+		},
+		CryptoConfig: CryptoConfig{
+			Url: viper.GetString("crypto.url"),
+			Key: viper.GetString("crypto.key"),
 		},
 	}
 
