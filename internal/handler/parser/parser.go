@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"context"
-	"log"
 	"sync"
 	"time"
 
@@ -24,79 +22,74 @@ type UseCase interface {
 
 // parser does not use own append function he operates with manager append ops
 type Parser struct {
-	uc            UseCase
-	mn            *manager.Manager
-	ctx           context.Context
-	cancel        context.CancelFunc
-	flushInterval time.Duration
-	mu            sync.Mutex
+	mn      *manager.Manager
+	wg      *sync.WaitGroup
+	quit    chan struct{}
+	mu      sync.Mutex
+	running bool
 }
 
-func NewParser(uc UseCase, mn *manager.Manager, flushInterval time.Duration) *Parser {
-	ctx, cancel := context.WithCancel(context.Background())
-
+func NewParser(mn *manager.Manager) *Parser {
 	return &Parser{
-		uc:            uc,
-		mn:            mn,
-		flushInterval: flushInterval,
-		ctx:           ctx,
-		cancel:        cancel,
+		mn:   mn,
+		wg:   &sync.WaitGroup{},
+		quit: make(chan struct{}),
 	}
 }
 
-func (m *Parser) Start() {
-	log.Println("Parser loop started")
-	go m.loop()
+func (j *Parser) Stop() {
+	close(j.quit)
 }
 
-func (m *Parser) Stop() {
-	m.cancel()
-	log.Println("Parser has stopped!")
+func (j *Parser) Wait() {
+	j.wg.Wait()
 }
 
-func (m *Parser) loop() {
-	for {
-		select {
-		case <-time.After(m.flushInterval):
-			m.startParsing()
-
-		case <-m.ctx.Done():
-			m.startParsing()
-			return
+func (j *Parser) Run(fn func() error, flushInterval time.Duration) {
+	j.wg.Add(1)
+	go func() {
+		defer j.wg.Done()
+		for {
+			select {
+			case <-time.After(flushInterval):
+				fn()
+			case <-j.quit: // Check if the quit signal is received
+				return
+			}
 		}
-	}
+	}()
 }
 
-func (m *Parser) startParsing() {
-	log.Println("Start parsing crypto remote!")
-
-	coins := []string{"BTC", "ETH", "USDT", "TON"}
-	currencies, err := m.uc.GetCurrencies(coins)
-	if err != nil {
-		log.Printf("Failed to parse Currencies err:%v", err)
-	}
-
-	priceIndices, err := m.uc.GetPriceIndices(coins)
-	if err != nil {
-		log.Printf("Failed to parse Currencies err:%v", err)
-	}
-
-	volumeIndices, err := m.uc.GetVolumeIndices(coins)
-	if err != nil {
-		log.Printf("Failed to parse Currencies err:%v", err)
-	}
-	for _, v := range currencies {
-		statsKey := entity.NewKey(entity.Key{
-			Timestamp: time.Now().Unix(),
-		})
-		statsValue := entity.Value{
-			Coin:        v,
-			CoinName:    v.Name,
-			PriceIndex:  priceIndices[v.Name],
-			VolumeIndex: volumeIndices[v.Name],
-		}
-		m.mn.Append(statsKey, statsValue)
-	}
-
-	log.Printf("Parser has parsed!")
-}
+//func (m *Parser) startParsing() {
+//	log.Println("Start parsing crypto remote!")
+//
+//	coins := []string{"BTC", "ETH", "USDT", "TON"}
+//	currencies, err := m.uc.GetCurrencies(coins)
+//	if err != nil {
+//		log.Printf("Failed to parse Currencies err:%v", err)
+//	}
+//
+//	priceIndices, err := m.uc.GetPriceIndices(coins)
+//	if err != nil {
+//		log.Printf("Failed to parse Currencies err:%v", err)
+//	}
+//
+//	volumeIndices, err := m.uc.GetVolumeIndices(coins)
+//	if err != nil {
+//		log.Printf("Failed to parse Currencies err:%v", err)
+//	}
+//	for _, v := range currencies {
+//		statsKey := entity.NewKey(entity.Key{
+//			Timestamp: time.Now().Unix(),
+//		})
+//		statsValue := entity.Value{
+//			Coin:        v,
+//			CoinName:    v.Name,
+//			PriceIndex:  priceIndices[v.Name],
+//			VolumeIndex: volumeIndices[v.Name],
+//		}
+//		m.mn.Append(statsKey, statsValue)
+//	}
+//
+//	log.Printf("Parser has parsed!")
+//}

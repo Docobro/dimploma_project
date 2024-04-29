@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/docobro/dimploma_project/internal/config"
@@ -58,13 +59,15 @@ func New(configpath string) (*App, error) {
 
 	mn.Start()
 
-	parser := parser.NewParser(app.c.GetUseCase(), mn, time.Second*5)
+	parser := parser.NewParser(mn)
 	gracy.AddCallback(func() error {
 		parser.Stop()
 		return nil
 	})
-
-	parser.Start()
-
+	parser.Run(app.c.GetUseCase().ParsePrices, time.Second*5)
 	return app, nil
+}
+
+func printAboba() {
+	log.Println("aboba")
 }
