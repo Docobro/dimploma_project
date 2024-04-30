@@ -44,3 +44,11 @@ func (r *Repository) GetCurrencies(coins []string) (map[string]*entity.Coin, err
 	}
 	return currencies, nil
 }
+
+func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) interface{} {
+	res, err := r.client.GetPriceMultiFull(coins, currencies)
+	if err != nil {
+		return err
+	}
+	return res
+}

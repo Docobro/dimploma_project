@@ -64,7 +64,17 @@ func New(configpath string) (*App, error) {
 		parser.Stop()
 		return nil
 	})
-	parser.Run(app.c.GetUseCase().ParsePrices, time.Second*5)
+	//coins := []string{"BTC", "ETH", "TON"}
+	//start := time.Date(2024, time.April, 24, 9, 0, 0, 0, time.Local)
+	//end := time.Date(2024, time.April, 26, 23, 0, 0, 0, time.Local)
+	//parser.Run(func() error {
+	//	app.c.GetUseCase().GetPrices(coins, start, end)
+	//	return nil
+	//}, time.Second*5)
+	parser.Run(func() error {
+		app.c.GetUseCase().Aboba()
+		return nil
+	}, time.Second*5)
 	return app, nil
 }
 

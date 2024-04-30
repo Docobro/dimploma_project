@@ -10,6 +10,7 @@ import (
 	"github.com/docobro/dimploma_project/internal/entity"
 	orm "github.com/docobro/dimploma_project/internal/orm/raw"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Repository struct {
@@ -165,4 +166,48 @@ func (r *Repository) CreateSupplies(supplies []entity.Supplies) error {
 	}
 
 	return nil
+}
+
+type rf struct {
+	Value     decimal.Decimal `ch:"value"`
+	Name      string          `ch:"name"`
+	CreatedAt time.Time       `ch:"created_at"`
+}
+
+func (r *Repository) GetPrices(coins []string, start time.Time, end time.Time) interface{} {
+	getPricesQuery := `SELECT p.value,c.name,p.created_at  
+  FROM cryptowallet.prices p
+  INNER JOIN cryptowallet.currencies c on c.id = p.crypto_id
+  WHERE 
+  p.created_at >= $1
+  AND p.created_at <= $2
+  AND  c.name IN($3)
+  ORDER BY p.created_at DESC LIMIT $4`
+
+	// price index = current_price / price_custom_duration_ago
+
+	// volume_hour = https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC&tsyms=USD
+
+	// aggregated_price_index = current_volume / volume_24h_ago
+
+	var cols []rf
+	rows, err := r.conn.Query(context.Background(), getPricesQuery, start, end, coins, len(coins))
+	if err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		var i rf
+		err := rows.Scan(
+			&i.Value,
+			&i.Name,
+			&i.CreatedAt,
+		)
+		if err != nil {
+			return err
+		}
+		cols = append(cols, i)
+	}
+
+	return cols
 }

@@ -22,16 +22,12 @@ func (r *Repository) CreatePrices(prices []entity.Coin) error {
 	}
 
 	for _, v := range prices {
-
 		for _, p := range v.Prices {
-			err := batch.Append(uuid.New(), decimal.NewFromFloat(p), v.MarketCap, time.Now(), time.Now(), tokens[v.Name].ID)
+			err := batch.Append(
+				uuid.New(), decimal.NewFromFloat(p), v.MarketCap, time.Now(), time.Now(), tokens[v.Name].ID)
 			if err != nil {
 				return err
 			}
-		}
-		// формат для time_diff нужно поменять на что-то другое !!!!!!
-		if err != nil {
-			return err
 		}
 	}
 
