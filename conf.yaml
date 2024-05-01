@@ -16,7 +16,7 @@ crypto:
 
 sql:
   host: "localhost"
-  port: "8124"
+  port: "9000"
   database: "cryptowallet"
   user: "default"
   password: ""

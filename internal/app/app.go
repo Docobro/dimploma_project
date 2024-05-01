@@ -35,8 +35,8 @@ func New(configpath string) (*App, error) {
 	}
 
 	// create connection to database
-	connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
-	_ = fmt.Sprintf("clickhouse://%v:%v?username=%v&password=%v&database=%v", config.SQLConfig.Host, config.SQLConfig.Port, config.User, config.Password, config.DBName)
+	// connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
+	connStr := fmt.Sprintf("clickhouse://%v:%v?username=%v&x-multi-statement=true&password=%v&database=%v;", config.SQLConfig.Host, config.SQLConfig.Port, config.User, config.Password, config.DBName)
 	pg, err := clickhouse.New(&clickhouse.Config{
 		Host:     config.SQLConfig.Host,
 		Port:     config.SQLConfig.Port,
@@ -47,7 +47,7 @@ func New(configpath string) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("app - clickhouse.New - failed to connect to clickhouse with error:%v", err)
 	}
-	runMigrations(connStrf)
+	runMigrations(connStr)
 	// init usecases
 	app.c = NewContainer(&pg.Conn, app.cfg.CryptoConfig)
 
