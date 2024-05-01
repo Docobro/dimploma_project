@@ -45,10 +45,24 @@ func (r *Repository) GetCurrencies(coins []string) (map[string]*entity.Coin, err
 	return currencies, nil
 }
 
-func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) interface{} {
+func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map[string]entity.Coin, error) {
 	res, err := r.client.GetPriceMultiFull(coins, currencies)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return res
+	coinsRes := make(map[string]entity.Coin)
+	for k, coinName := range res.RAW {
+		coinsRes[string(k)] = entity.Coin{
+			Name:         string(k),
+			MarketCap:    res.RAW[client.CoinType(k)]["USD"].MktCap,
+			VolumeHour:   res.RAW[client.CoinType(k)]["USD"].VolumeHour,
+			Volume24Hour: res.RAW[client.CoinType(k)]["USD"].Volume24Hour,
+			Prices:       map[string]float64{},
+		}
+
+		for currency_key, currency := range coinName {
+			coinsRes[string(k)].Prices[string(currency_key)] = currency.Price
+		}
+	}
+	return coinsRes, nil
 }

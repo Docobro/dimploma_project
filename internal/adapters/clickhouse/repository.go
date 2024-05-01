@@ -68,7 +68,7 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	}
 
 	for _, v := range indices {
-		err := batch.Append(uuid.New(), v.Price.Value, v.Volume.Value, time.Now(), tokens[v.CryptoName].ID)
+		err := batch.Append(uuid.New(), v.Volume.Value, time.Now(), tokens[v.CryptoName].ID, v.Price.Value)
 		if err != nil {
 			return err
 		}

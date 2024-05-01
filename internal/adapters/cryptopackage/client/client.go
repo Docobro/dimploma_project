@@ -25,19 +25,19 @@ func New(url string, apiKey string) *Client {
 // return currency price in map where
 // Key = coin such as BTC,ETH etc..
 // Value is map of prices such as USD EUR
-func (c *Client) GetPriceMultiFull(coins []string, currencies []string) (*PriceMultiFull, error) {
+func (c *Client) GetPriceMultiFull(coins []string, currencies []string) (PriceMultiFull, error) {
 	coinsParam := strings.Join(coins, ",")
 	currencyParam := strings.Join(currencies, ",")
 	url := fmt.Sprintf("%s/pricemultifull?fsyms=%v&tsyms=%v", c.url, coinsParam, currencyParam)
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return PriceMultiFull{}, err
 	}
 	// Time.UnmarshalJSON: input is not a JSON string
 	defer resp.Body.Close()
-	coinPrices := new(PriceMultiFull)
-	if err := json.NewDecoder(resp.Body).Decode(coinPrices); err != nil {
-		return nil, err
+	var coinPrices PriceMultiFull
+	if err := json.NewDecoder(resp.Body).Decode(&coinPrices); err != nil {
+		return PriceMultiFull{}, err
 	}
 
 	return coinPrices, nil

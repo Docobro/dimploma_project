@@ -11,7 +11,7 @@ type (
 	}
 
 	Value struct {
-		PriceIndex  int32
+		PriceIndex  float64
 		VolumeIndex float32
 		Coin        *Coin
 		CoinName    string

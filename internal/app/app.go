@@ -35,7 +35,7 @@ func New(configpath string) (*App, error) {
 	}
 
 	// create connection to database
-	connStrf := "clickhouse://clickhouseDB:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
+	connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
 	_ = fmt.Sprintf("clickhouse://%v:%v?username=%v&password=%v&database=%v", config.SQLConfig.Host, config.SQLConfig.Port, config.User, config.Password, config.DBName)
 	pg, err := clickhouse.New(&clickhouse.Config{
 		Host:     config.SQLConfig.Host,
@@ -64,17 +64,9 @@ func New(configpath string) (*App, error) {
 		parser.Stop()
 		return nil
 	})
-	//coins := []string{"BTC", "ETH", "TON"}
-	//start := time.Date(2024, time.April, 24, 9, 0, 0, 0, time.Local)
-	//end := time.Date(2024, time.April, 26, 23, 0, 0, 0, time.Local)
-	//parser.Run(func() error {
-	//	app.c.GetUseCase().GetPrices(coins, start, end)
-	//	return nil
-	//}, time.Second*5)
-	parser.Run(func() error {
-		app.c.GetUseCase().Aboba()
-		return nil
-	}, time.Second*5)
+	uc := app.c.GetUseCase()
+	parser.Run(uc.ParsePrices, time.Second*15)
+	parser.Run(uc.CreateIndices, time.Second*15)
 	return app, nil
 }
 
