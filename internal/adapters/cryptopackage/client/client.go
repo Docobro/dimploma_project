@@ -22,6 +22,45 @@ func New(url string, apiKey string) *Client {
 	}
 }
 
+func (c *Client) GetTransactionData(coins []string) (map[string]int, error) {
+	symbolsParam := strings.Join(coins, ",")
+	url := fmt.Sprintf("%s/data/blockchain/histo/day?fsym=%s&limit=1", c.url, symbolsParam)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("authorization", "Apikey "+c.apiKey)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
+	}
+
+	var response map[string]map[string][]struct {
+		TransactionCount int `json:"transaction_count"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, err
+	}
+
+	transactionCounts := make(map[string]int)
+	for symbol, data := range response {
+		if len(data["Data"]) > 0 {
+			transactionCounts[symbol] = data["Data"][0].TransactionCount
+		}
+	}
+
+	return transactionCounts, nil
+}
+
 // return currency price in map where
 // Key = coin such as BTC,ETH etc..
 // Value is map of prices such as USD EUR
