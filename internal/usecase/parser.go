@@ -31,7 +31,7 @@ func (uc *Usecase) GetVolumeIndex(coins []string, start time.Time, end time.Time
 }
 
 func (uc *Usecase) CreateIndices() error {
-	log.Println("do parse prices")
+	log.Println("do parse indices")
 	coins := []string{"BTC"}
 	currencies := []string{"USD"}
 	cryptoFullInfo, err := uc.cryptoRepo.GetCryptoFullInfo(coins, currencies)
@@ -55,4 +55,20 @@ func (uc *Usecase) CreateIndices() error {
 func (uc *Usecase) GetPrices(coins []string, start time.Time, end time.Time) {
 	res := uc.storage.GetPrices(coins, start, end)
 	log.Println(res)
+}
+
+func (uc *Usecase) ParseTrasactionCount() error {
+	log.Println("do parse transaction")
+	coins := []string{"BTC", "ETH", "TON"}
+
+	transaction, err := uc.cryptoRepo.GetCurrencyTransactionCount(coins)
+	if err != nil {
+		return err
+	}
+	err = uc.storage.CreateTransaction(transaction)
+	if err != nil {
+		return err
+	}
+	log.Println("parse transaction done")
+	return nil
 }

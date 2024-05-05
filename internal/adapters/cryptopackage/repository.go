@@ -66,3 +66,11 @@ func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map
 	}
 	return coinsRes, nil
 }
+
+func (r *Repository) GetCurrencyTransactionCount(coins []string) (map[string]uint32, error) {
+	raw, err := r.client.GetTransactionData(coins)
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
+}

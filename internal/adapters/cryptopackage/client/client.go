@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -20,6 +21,50 @@ func New(url string, apiKey string) *Client {
 		url:    url,
 		apiKey: apiKey,
 	}
+}
+
+func (c *Client) GetTransactionData(coins []string) (map[string]uint32, error) {
+	result := make(map[string]uint32)
+	for _, v := range coins {
+		url := fmt.Sprintf("https://min-api.cryptocompare.com/data/blockchain/histo/day?fsym=%s&limit=1&api_key=%s", v, c.apiKey)
+
+		// Create a new HTTP GET request
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		// Perform the request
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		// Check the status code of the response
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
+		}
+
+		// Read the response body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		// Decode the JSON response
+		var response TransactionResponse
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return nil, err
+		}
+
+		// Get the transaction count for the last day
+		if len(response.Data.Data) != 0 {
+			result[v] = uint32(response.Data.Data[0].TransactionCount)
+		}
+	}
+	return result, nil
 }
 
 // return currency price in map where

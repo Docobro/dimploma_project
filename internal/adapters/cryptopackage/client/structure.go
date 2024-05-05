@@ -30,6 +30,14 @@ type (
 	}
 )
 
+type TransactionResponse struct {
+	Data struct {
+		Data []struct {
+			TransactionCount int `json:"transaction_count"`
+		} `json:"data"`
+	} `json:"Data"`
+}
+
 // USDDetails represents the details for USD
 type PriceDetails struct {
 	ConversionLastUpdate    uint64  `json:"CONVERSIONLASTUPDATE"`

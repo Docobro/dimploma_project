@@ -13,9 +13,11 @@ type ClickhouseRepo interface {
 	// example BTC, time.Hour * 1 (priceIndex1H)
 	// example BTC, time.Hour * 24 (priceIndex24H)
 	CalculatePriceIndex(coin string, timeAgo time.Duration) float64
+	CreateTransaction(transaction map[string]uint32) error
 }
 
 type CryptoRepo interface {
 	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
 	GetCryptoFullInfo(coins []string, currencies []string) (map[string]entity.Coin, error)
+	GetCurrencyTransactionCount(coins []string) (map[string]uint32, error)
 }
