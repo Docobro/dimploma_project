@@ -66,7 +66,8 @@ func New(configpath string) (*App, error) {
 	})
 	uc := app.c.GetUseCase()
 	parser.Run(uc.ParsePrices, time.Second*15)
-	parser.Run(uc.CreateIndices, time.Second*15)
+	parser.Run(uc.CreateIndices, time.Second*30)
+	parser.Run(uc.ParseTrasactionCount, time.Minute*1)
 	return app, nil
 }
 

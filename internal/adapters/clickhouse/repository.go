@@ -115,19 +115,18 @@ func (r *Repository) CreateVolumes1h(volume []entity.Volume) error {
 }
 
 // добавление транзакций за день
-func (r *Repository) CreateTransaction(transaction []entity.Transaction) error {
+func (r *Repository) CreateTransaction(transaction map[string]uint32) error {
 	tokens, err := r.GetCryptoTokens()
 	if err != nil {
 		return err
 	}
-
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO transaction_per_day(id, crypto_id, trans_volume, created_at)")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO transaction_per_day")
 	if err != nil {
 		return err
 	}
 
-	for _, v := range transaction {
-		err := batch.Append(uuid.New(), tokens[v.CryptoName].ID, v.Value, time.Now())
+	for k, v := range transaction {
+		err := batch.Append(uuid.New(), int64(v), time.Now(), tokens[k].ID)
 		if err != nil {
 			return err
 		}

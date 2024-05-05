@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -52,44 +53,13 @@ func (j *Parser) Run(fn func() error, flushInterval time.Duration) {
 		for {
 			select {
 			case <-time.After(flushInterval):
-				fn()
+				err := fn()
+				if err != nil {
+					fmt.Printf("err: %v\n", err)
+				}
 			case <-j.quit: // Check if the quit signal is received
 				return
 			}
 		}
 	}()
 }
-
-//func (m *Parser) startParsing() {
-//	log.Println("Start parsing crypto remote!")
-//
-//	coins := []string{"BTC", "ETH", "USDT", "TON"}
-//	currencies, err := m.uc.GetCurrencies(coins)
-//	if err != nil {
-//		log.Printf("Failed to parse Currencies err:%v", err)
-//	}
-//
-//	priceIndices, err := m.uc.GetPriceIndices(coins)
-//	if err != nil {
-//		log.Printf("Failed to parse Currencies err:%v", err)
-//	}
-//
-//	volumeIndices, err := m.uc.GetVolumeIndices(coins)
-//	if err != nil {
-//		log.Printf("Failed to parse Currencies err:%v", err)
-//	}
-//	for _, v := range currencies {
-//		statsKey := entity.NewKey(entity.Key{
-//			Timestamp: time.Now().Unix(),
-//		})
-//		statsValue := entity.Value{
-//			Coin:        v,
-//			CoinName:    v.Name,
-//			PriceIndex:  priceIndices[v.Name],
-//			VolumeIndex: volumeIndices[v.Name],
-//		}
-//		m.mn.Append(statsKey, statsValue)
-//	}
-//
-//	log.Printf("Parser has parsed!")
-//}
