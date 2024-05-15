@@ -71,9 +71,9 @@ CREATE TABLE cryptowallet.supplies
 
     `id` UUID,
 
-    `crypto_id` Int64,
+    `crypto_id` UUID,
 
-    `total_supply` Int64,
+    `total_supply` Float64,
 
     `created_at` DateTime DEFAULT now()
 )
@@ -90,9 +90,9 @@ CREATE TABLE cryptowallet.trade_volume_1h
 
     `id` UUID,
 
-    `crypto_id` Int64,
+    `crypto_id` UUID,
 
-    `trade_volume` Float32,
+    `trade_volume` Float64,
 
     `time_diff` DateTime
 )

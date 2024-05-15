@@ -18,6 +18,7 @@ type Coin struct {
 	MarketCap    float64
 	Volume24Hour float64
 	VolumeHour   float64
+	Supply       float64
 }
 
 type (
@@ -87,24 +88,14 @@ type Indices struct {
 }
 
 type VolumeIndex struct {
-	Value float32
+	Value float64
 }
 
 type PriceIndex struct {
 	Value float64
 }
 
-type Volume struct {
-	CryptoName string
-	Value      float64
-}
-
-type Transaction struct {
-	CryptoName string
-	Value      uint64
-}
-
 type Supplies struct {
 	CryptoName string
-	Value      uint64
+	Value      float64
 }

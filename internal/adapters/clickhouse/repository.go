@@ -80,26 +80,26 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	}
 
 	if ok := batch.IsSent(); !ok {
-		return errors.New("batch is not sended")
+		return errors.New("batch is not sent")
 	}
 
 	return nil
 }
 
 // добавление объемов торгов за 1 час
-func (r *Repository) CreateVolumes1h(volume []entity.Volume) error {
+func (r *Repository) CreateVolumes1m(volume map[string]float32) error {
 	tokens, err := r.GetCryptoTokens()
 	if err != nil {
 		return err
 	}
 
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO trade_volume_1h(id, crypto_id, trade_volume, time_diff)")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO trade_volume_1h")
 	if err != nil {
 		return err
 	}
 
-	for _, v := range volume {
-		err := batch.Append(uuid.New(), tokens[v.CryptoName].ID, v.Value, time.Now())
+	for k, v := range volume {
+		err := batch.Append(uuid.New(), tokens[k].ID, float32(v), time.Now())
 		// формат для time_diff нужно поменять на что-то другое !!!!!!
 		if err != nil {
 			return err
@@ -147,7 +147,7 @@ func (r *Repository) CreateSupplies(supplies []entity.Supplies) error {
 		return err
 	}
 
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO supplies(id, crypto_id, total_supply, created_at)")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO supplies")
 	if err != nil {
 		return err
 	}

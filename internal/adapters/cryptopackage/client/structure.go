@@ -38,6 +38,14 @@ type TransactionResponse struct {
 	} `json:"Data"`
 }
 
+type VolumeHourResponse struct {
+	Data struct {
+		Data []struct {
+			VolumeTo float32 `json:"volumeto"`
+		} `json:"Data"`
+	} `json:"Data"`
+}
+
 // USDDetails represents the details for USD
 type PriceDetails struct {
 	ConversionLastUpdate    uint64  `json:"CONVERSIONLASTUPDATE"`

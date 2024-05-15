@@ -58,6 +58,7 @@ func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map
 			VolumeHour:   res.RAW[client.CoinType(k)]["USD"].VolumeHour,
 			Volume24Hour: res.RAW[client.CoinType(k)]["USD"].Volume24Hour,
 			Prices:       map[string]float64{},
+			Supply:       res.RAW[client.CoinType(k)]["USD"].Supply,
 		}
 
 		for currency_key, currency := range coinName {
@@ -69,6 +70,14 @@ func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map
 
 func (r *Repository) GetCurrencyTransactionCount(coins []string) (map[string]uint32, error) {
 	raw, err := r.client.GetTransactionData(coins)
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
+}
+
+func (r *Repository) GetOneMinuteVolume(coins []string) (map[string]float32, error) {
+	raw, err := r.client.GetVolumeMinuteData(coins)
 	if err != nil {
 		return nil, err
 	}

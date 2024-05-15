@@ -12,7 +12,7 @@ type (
 
 	Value struct {
 		PriceIndex  float64
-		VolumeIndex float32
+		VolumeIndex float64
 		Coin        *Coin
 		CoinName    string
 		Price       int64
