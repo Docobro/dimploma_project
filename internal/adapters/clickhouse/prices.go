@@ -109,31 +109,31 @@ FROM
         SELECT 
             CAST(trade_volume AS Float64)
         FROM 
-            cryptowallet.trade_volume_1h
+            cryptowallet.trade_volume_1m
         WHERE 
             crypto_id = $1
         ORDER BY 
-            time_diff DESC
+            created_at DESC
         LIMIT 1
     ) AS latest_volume,
     (
         SELECT 
             CAST(trade_volume AS Float64)
         FROM 
-			cryptowallet.trade_volume_1h
+			cryptowallet.trade_volume_1m
         WHERE 
-            crypto_id = $1 AND toStartOfHour(time_diff) = toStartOfHour(NOW() - INTERVAL $2 HOUR)      
+            crypto_id = $1 AND toStartOfHour(created_at) = toStartOfHour(NOW() - INTERVAL $2 HOUR)      
         LIMIT 1 
     ) AS lag_volume,
     (
         SELECT 
-            toStartOfHour(time_diff)
+            toStartOfHour(created_at)
         FROM 
-			cryptowallet.trade_volume_1h
+			cryptowallet.trade_volume_1m
         WHERE 
             crypto_id = $1
         ORDER BY 
-            time_diff DESC
+            created_at DESC
         LIMIT 1
     ) AS current_time
 FROM 
@@ -145,5 +145,6 @@ LIMIT 1;
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 	}
+
 	return res
 }

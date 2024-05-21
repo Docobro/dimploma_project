@@ -29,6 +29,26 @@ func (uc *Usecase) CalculateVolumeIndex(coin string, timeAgo time.Duration) floa
 	return uc.storage.CalculateVolumeIndex(coin, timeAgo)
 }
 
+func (uc *Usecase) ParsePearsonPriceVol() error {
+	log.Println("do parse pearson")
+	coins := []string{"BTC", "ETH"}
+	pearsonReq := []entity.PearsonPriceVol{}
+	for i := 0; i < len(coins); i++ {
+		coeffPearson := uc.storage.PearsonPriceToVolumeCorrelation(coins[i])
+		coef := entity.PearsonPriceVol{
+			CryptoName: coins[i],
+			Value:      coeffPearson,
+		}
+		pearsonReq = append(pearsonReq, coef)
+	}
+	err := uc.storage.CreatePearsonPriceToVolume(pearsonReq)
+	if err != nil {
+		return err
+	}
+	log.Println("parse pearson done")
+	return nil
+}
+
 func (uc *Usecase) CreateIndices() error {
 	log.Println("do parse indices")
 	coins := []string{"BTC", "ETH"}

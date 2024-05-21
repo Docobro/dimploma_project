@@ -99,3 +99,8 @@ type Supplies struct {
 	CryptoName string
 	Value      float64
 }
+
+type PearsonPriceVol struct {
+	CryptoName string
+	Value      float64
+}

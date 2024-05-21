@@ -86,14 +86,14 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	return nil
 }
 
-// добавление объемов торгов за 1 час
+// добавление объемов торгов за 1 минуту
 func (r *Repository) CreateVolumes1m(volume map[string]float32) error {
 	tokens, err := r.GetCryptoTokens()
 	if err != nil {
 		return err
 	}
 
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO trade_volume_1h")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO trade_volume_1m")
 	if err != nil {
 		return err
 	}
@@ -162,6 +162,40 @@ func (r *Repository) CreateSupplies(supplies []entity.Supplies) error {
 	err = batch.Send()
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// добавление коэффициента Пирсона
+func (r *Repository) CreatePearsonPriceToVolume(coeff []entity.PearsonPriceVol) error {
+	if len(coeff) == 0 {
+		return errors.New("nothing to insert. abort")
+	}
+	tokens, err := r.GetCryptoTokens()
+	if err != nil {
+		return err
+	}
+
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO pearson_price_volume")
+	if err != nil {
+		return err
+	}
+
+	for _, v := range coeff {
+		err := batch.Append(uuid.New(), v.Value, time.Now(), tokens[v.CryptoName].ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = batch.Send()
+	if err != nil {
+		return err
+	}
+
+	if ok := batch.IsSent(); !ok {
+		return errors.New("batch is not sent")
 	}
 
 	return nil

@@ -13,20 +13,20 @@ const trade = `-- name: Trade :many
 SELECT id, crypto_id, trade_volume, time_diff FROM trade_volume_1h
 `
 
-func (q *Queries) Trade(ctx context.Context) ([]TradeVolume1h, error) {
+func (q *Queries) Trade(ctx context.Context) ([]TradeVolume1m, error) {
 	rows, err := q.db.Query(ctx, trade)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []TradeVolume1h{}
+	items := []TradeVolume1m{}
 	for rows.Next() {
-		var i TradeVolume1h
+		var i TradeVolume1m
 		if err := rows.Scan(
 			&i.ID,
 			&i.CryptoID,
 			&i.TradeVolume,
-			&i.TimeDiff,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

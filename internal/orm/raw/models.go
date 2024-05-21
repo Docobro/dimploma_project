@@ -20,7 +20,7 @@ type Currency struct {
 type Index struct {
 	ID          int64            `json:"id"`
 	CryptoID    int64            `json:"crypto_id"`
-	PriceIndex  int32            `json:"price_index"`
+	PriceIndex  float64          `json:"price_index"`
 	VolumeIndex float64          `json:"volume_index"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
@@ -41,11 +41,11 @@ type Supply struct {
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 }
 
-type TradeVolume1h struct {
+type TradeVolume1m struct {
 	ID          int64       `json:"id"`
 	CryptoID    int64       `json:"crypto_id"`
 	TradeVolume float64     `json:"trade_volume"`
-	TimeDiff    interface{} `json:"time_diff"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
 }
 
 type TransactionPerDay struct {

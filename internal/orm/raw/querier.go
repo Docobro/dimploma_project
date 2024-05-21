@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	Trade(ctx context.Context) ([]TradeVolume1h, error)
+	Trade(ctx context.Context) ([]TradeVolume1m, error)
 }
 
 var _ Querier = (*Queries)(nil)

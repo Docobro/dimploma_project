@@ -26,7 +26,7 @@ CREATE TABLE cryptowallet.indices
 
     `id` UUID,
 
-    `volume_index` Float32,
+    `volume_index` Float64,
 
     `created_at` DateTime DEFAULT now(),
 
@@ -83,9 +83,9 @@ ORDER BY id
 SETTINGS index_granularity = 8192;
 
 
--- cryptowallet.trade_volume_1h определение
+-- cryptowallet.trade_volume_1m определение
 
-CREATE TABLE cryptowallet.trade_volume_1h
+CREATE TABLE cryptowallet.trade_volume_1m
 (
 
     `id` UUID,
@@ -94,7 +94,7 @@ CREATE TABLE cryptowallet.trade_volume_1h
 
     `trade_volume` Float64,
 
-    `time_diff` DateTime
+     `created_at` DateTime DEFAULT now(),
 )
 ENGINE = MergeTree
 PRIMARY KEY tuple(id)
@@ -110,6 +110,25 @@ CREATE TABLE cryptowallet.transaction_per_day
     `id` UUID,
 
     `trans_value` Int64,
+
+    `created_at` DateTime DEFAULT now(),
+
+    `crypto_id` UUID
+)
+ENGINE = MergeTree
+PRIMARY KEY tuple(id)
+ORDER BY id
+SETTINGS index_granularity = 8192;
+
+
+-- cryptowallet.pearsonpearson_price_volume определение
+
+CREATE TABLE cryptowallet.pearson_price_volume
+(
+
+    `id` UUID,
+
+    `priceToVolume` Float64,
 
     `created_at` DateTime DEFAULT now(),
 

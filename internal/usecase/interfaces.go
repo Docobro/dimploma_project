@@ -17,6 +17,8 @@ type ClickhouseRepo interface {
 	CreateTransaction(transaction map[string]uint32) error
 	CreateVolumes1m(volume map[string]float32) error
 	CreateSupplies(supplies []entity.Supplies) error
+	PearsonPriceToVolumeCorrelation(coin string) float64
+	CreatePearsonPriceToVolume(coeff []entity.PearsonPriceVol) error
 }
 
 type CryptoRepo interface {
