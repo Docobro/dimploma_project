@@ -25,29 +25,27 @@ func New(url string, apiKey string) *Client {
 	}
 }
 
-func (c *Client) GetOneMinuteFull(coin string, currencies []string) (OneMinuteResponse, error) {
-	currencyParam := strings.Join(currencies, ",")
-	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=1", c.url, coin, currencyParam)
-	fmt.Println(url)
+func (c *Client) GetOneMinuteFull(coin string, currency string) (MinuteResponse, error) {
+	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=1", c.url, coin, currency)
 	resp, err := http.Get(url)
 	if err != nil {
-		return OneMinuteResponse{}, err
+		fmt.Println(err)
+		return MinuteResponse{}, err
 	}
-	// if resp.StatusCode == http.StatusOK {
-	// 	bodyBytes, err := io.ReadAll(resp.Body)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	bodyString := string(bodyBytes)
-	// 	log.Println(bodyString)
-	// }
-	// Time.UnmarshalJSON: input is not a JSON string
+	//  if resp.StatusCode == http.StatusOK {
+	//		bodyBytes, err := io.ReadAll(resp.Body)
+	//		if err != nil {
+	//			log.Fatal(err)
+	//		}
+	//		bodyString := string(bodyBytes)
+	//		log.Println(bodyString)
+	//	}
 	defer resp.Body.Close()
-	var minuteResult OneMinuteResponse
+	var minuteResult MinuteResponse
 	if err := json.NewDecoder(resp.Body).Decode(&minuteResult); err != nil {
-		return OneMinuteResponse{}, err
+		fmt.Printf("failed to decode json:err:%v", err)
+		return minuteResult, err
 	}
-	fmt.Println(err)
 	return minuteResult, nil
 }
 

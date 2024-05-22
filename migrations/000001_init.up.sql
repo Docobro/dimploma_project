@@ -18,6 +18,11 @@ PRIMARY KEY tuple(id)
 ORDER BY id
 SETTINGS index_granularity = 8192;
 
+INSERT INTO cryptowallet.currencies (id,name,code,max_supply,description) VALUES
+ ('43dc5ab9-f8ec-48f6-8ae7-348096691835','USDT','4',389423168412894,'Dollars'),
+ ('97f5148a-f8ec-48f6-8ae7-348096691835','TON','2',9999,''),
+ ('835a9c62-caaf-4891-91a7-4f9137f3f815','BTC','1',389423168412894,'BITOC'),
+ ('43dc5ab9-3ff7-4303-ae06-9aafe0114822','ETH','3',9999,'');
 
 -- cryptowallet.indices определение
 

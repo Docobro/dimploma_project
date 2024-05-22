@@ -2,6 +2,7 @@ package cryptopackage
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/docobro/dimploma_project/internal/adapters/cryptopackage/client"
 	"github.com/docobro/dimploma_project/internal/config"
@@ -68,13 +69,14 @@ func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map
 	return coinsRes, nil
 }
 
-func (r *Repository) GetOneMinuteData(coin string, currencies []string) (map[string]entity.Coin, error) {
-	res, err := r.client.GetOneMinuteFull(coin, currencies)
+func (r *Repository) GetOneMinuteData(coin string, currency string) (map[string]entity.Coin, error) {
+	res, err := r.client.GetOneMinuteFull(coin, currency)
 	if err != nil {
+		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("res: %v\n", res)
 	minuteRes := make(map[string]entity.Coin)
-	for k := range res.RAW {
 		minuteRes[string(k)] = entity.Coin{
 			Name:        string(k),
 			VolumeTo:    res.RAW[client.CoinType(k)]["USD"].Data.Data[0].VolumeTo,

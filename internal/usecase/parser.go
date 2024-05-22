@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -104,14 +103,12 @@ func (uc *Usecase) ParseTotalSupply() error {
 func (uc *Usecase) ParseVolumeMinute() error {
 	log.Println("do parse volume 1 minute")
 	coins := []string{"BTC", "ETH"}
-	currencies := []string{"USD"}
 	volumes := make(map[string]entity.Coin, len(coins))
 	for i := 0; i < len(coins); i++ {
-		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], currencies)
+		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], "USD")
 		if err != nil {
 			return err
 		}
-		fmt.Println(volume)
 		volumes[coins[i]] = volume[coins[i]]
 	}
 

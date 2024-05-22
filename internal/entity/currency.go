@@ -38,9 +38,9 @@ type (
 type MinuteResponse struct {
 	Data struct {
 		Data []struct {
-			Open     float64 `json:"open"`
 			Close    float64 `json:"close"`
-			VolumeTo float64 `json:"volumeto"`
+			Open     float64 `json:"open"`
+			Volumeto float64 `json:"volumeto"`
 		} `json:"Data"`
 	} `json:"Data"`
 }

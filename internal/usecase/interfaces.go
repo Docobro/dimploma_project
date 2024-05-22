@@ -22,5 +22,5 @@ type ClickhouseRepo interface {
 type CryptoRepo interface {
 	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
 	GetCryptoFullInfo(coins []string, currencies []string) (map[string]entity.Coin, error)
-	GetOneMinuteData(coin string, currencies []string) (map[string]entity.Coin, error)
+	GetOneMinuteData(coin string, currency string) (map[string]entity.Coin, error)
 }
