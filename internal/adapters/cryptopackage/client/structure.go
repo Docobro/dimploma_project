@@ -28,20 +28,17 @@ type (
 	PriceMultiFull struct {
 		RAW map[CoinType]map[CurrencyType]PriceDetails `json:"RAW"`
 	}
+	OneMinuteResponse struct {
+		RAW map[CoinType]map[CurrencyType]MinuteResponse `json:"RAW"`
+	}
 )
 
-type TransactionResponse struct {
+type MinuteResponse struct {
 	Data struct {
 		Data []struct {
-			TransactionCount int `json:"transaction_count"`
-		} `json:"data"`
-	} `json:"Data"`
-}
-
-type VolumeHourResponse struct {
-	Data struct {
-		Data []struct {
-			VolumeTo float32 `json:"volumeto"`
+			Open     float64 `json:"open"`
+			Close    float64 `json:"close"`
+			VolumeTo float64 `json:"volumeto"`
 		} `json:"Data"`
 	} `json:"Data"`
 }

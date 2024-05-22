@@ -34,3 +34,6 @@ docker restart superset
 CREATE TABLE app.app(
   uid UInt32
 ) engine=MergeTree() ORDER BY uid;
+
+# GIT token for 30 days, start in 21.05.2024
+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

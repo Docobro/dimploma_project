@@ -105,7 +105,6 @@ func (m *Manager) startInserting() {
 		indices = append(indices, entity.Indices{
 			CryptoName: v.CoinName,
 			Price:      entity.PriceIndex{Value: v.PriceIndex},
-			Volume:     entity.VolumeIndex{Value: v.VolumeIndex},
 		})
 		prices = append(prices, *v.Coin)
 	}

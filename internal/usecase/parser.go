@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -19,29 +20,29 @@ func (uc *Usecase) ParsePrices() error {
 	for _, v := range cryptoFullInfo {
 		pricesReq = append(pricesReq, v)
 	}
+	log.Println("parse prices done")
 	return uc.storage.CreatePrices(pricesReq)
 }
 
 func (uc *Usecase) CalculatePriceIndex(coin string, timeAgo time.Duration) float64 {
 	return uc.storage.CalculatePriceIndex(coin, timeAgo)
 }
-func (uc *Usecase) CalculateVolumeIndex(coin string, timeAgo time.Duration) float64 {
-	return uc.storage.CalculateVolumeIndex(coin, timeAgo)
-}
 
-func (uc *Usecase) ParsePearsonPriceVol() error {
+func (uc *Usecase) ParsePearson() error {
 	log.Println("do parse pearson")
 	coins := []string{"BTC", "ETH"}
-	pearsonReq := []entity.PearsonPriceVol{}
+	pearsonReq := []entity.PearsonPriceVolMrkt{}
 	for i := 0; i < len(coins); i++ {
-		coeffPearson := uc.storage.PearsonPriceToVolumeCorrelation(coins[i])
-		coef := entity.PearsonPriceVol{
+		coeffPearsonVolume := uc.storage.PearsonPriceToVolumeCorrelation(coins[i])
+		coeffPersonMrktCap := uc.storage.PearsonPriceToMrktCapCorrelation(coins[i])
+		coef := entity.PearsonPriceVolMrkt{
 			CryptoName: coins[i],
-			Value:      coeffPearson,
+			Volume:     coeffPearsonVolume,
+			MrktCap:    coeffPersonMrktCap,
 		}
 		pearsonReq = append(pearsonReq, coef)
 	}
-	err := uc.storage.CreatePearsonPriceToVolume(pearsonReq)
+	err := uc.storage.CreatePearson(pearsonReq)
 	if err != nil {
 		return err
 	}
@@ -56,11 +57,9 @@ func (uc *Usecase) CreateIndices() error {
 	indicesReq := []entity.Indices{}
 	for i := 0; i < len(coins); i++ {
 		priceIndex := uc.CalculatePriceIndex(coins[i], time.Hour*1)
-		volumeIndex := uc.CalculateVolumeIndex(coins[i], time.Hour*1)
 		indices := entity.Indices{
 			CryptoName: coins[i],
 			Price:      entity.PriceIndex{Value: priceIndex},
-			Volume:     entity.VolumeIndex{Value: volumeIndex},
 		}
 		indicesReq = append(indicesReq, indices)
 	}
@@ -75,26 +74,6 @@ func (uc *Usecase) CreateIndices() error {
 func (uc *Usecase) GetPrices(coins []string, start time.Time, end time.Time) {
 	res := uc.storage.GetPrices(coins, start, end)
 	log.Println(res)
-}
-
-func (uc *Usecase) ParseTrasactionCount() error {
-	if time.Now().UTC().Hour() != 0 {
-		return nil
-	}
-
-	log.Println("do parse transaction")
-	coins := []string{"BTC", "ETH"}
-
-	transaction, err := uc.cryptoRepo.GetCurrencyTransactionCount(coins)
-	if err != nil {
-		return err
-	}
-	err = uc.storage.CreateTransaction(transaction)
-	if err != nil {
-		return err
-	}
-	log.Println("parse transaction done")
-	return nil
 }
 
 func (uc *Usecase) ParseTotalSupply() error {
@@ -125,12 +104,26 @@ func (uc *Usecase) ParseTotalSupply() error {
 func (uc *Usecase) ParseVolumeMinute() error {
 	log.Println("do parse volume 1 minute")
 	coins := []string{"BTC", "ETH"}
-
-	volume, err := uc.cryptoRepo.GetOneMinuteVolume(coins)
-	if err != nil {
-		return err
+	currencies := []string{"USD"}
+	volumes := make(map[string]entity.Coin, len(coins))
+	for i := 0; i < len(coins); i++ {
+		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], currencies)
+		if err != nil {
+			return err
+		}
+		fmt.Println(volume)
+		volumes[coins[i]] = volume[coins[i]]
 	}
-	err = uc.storage.CreateVolumes1m(volume)
+
+	volumeReq := []entity.VolumeTo{}
+	for i := 0; i < len(coins); i++ {
+		volume := entity.VolumeTo{
+			CryptoName: coins[i],
+			Value:      volumes[coins[i]].VolumeTo,
+		}
+		volumeReq = append(volumeReq, volume)
+	}
+	err := uc.storage.CreateVolumes1m(volumeReq)
 	if err != nil {
 		return err
 	}

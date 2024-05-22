@@ -68,7 +68,7 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 	}
 
 	for _, v := range indices {
-		err := batch.Append(uuid.New(), v.Volume.Value, time.Now(), tokens[v.CryptoName].ID, v.Price.Value)
+		err := batch.Append(uuid.New(), time.Now(), tokens[v.CryptoName].ID, v.Price.Value)
 		if err != nil {
 			return err
 		}
@@ -87,7 +87,7 @@ func (r *Repository) CreateIndices(indices []entity.Indices) error {
 }
 
 // добавление объемов торгов за 1 минуту
-func (r *Repository) CreateVolumes1m(volume map[string]float32) error {
+func (r *Repository) CreateVolumes1m(volume []entity.VolumeTo) error {
 	tokens, err := r.GetCryptoTokens()
 	if err != nil {
 		return err
@@ -98,35 +98,9 @@ func (r *Repository) CreateVolumes1m(volume map[string]float32) error {
 		return err
 	}
 
-	for k, v := range volume {
-		err := batch.Append(uuid.New(), tokens[k].ID, float32(v), time.Now())
+	for _, v := range volume {
+		err := batch.Append(uuid.New(), tokens[v.CryptoName].ID, v.Value, time.Now())
 		// формат для time_diff нужно поменять на что-то другое !!!!!!
-		if err != nil {
-			return err
-		}
-	}
-
-	err = batch.Send()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// добавление транзакций за день
-func (r *Repository) CreateTransaction(transaction map[string]uint32) error {
-	tokens, err := r.GetCryptoTokens()
-	if err != nil {
-		return err
-	}
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO transaction_per_day")
-	if err != nil {
-		return err
-	}
-
-	for k, v := range transaction {
-		err := batch.Append(uuid.New(), int64(v), time.Now(), tokens[k].ID)
 		if err != nil {
 			return err
 		}
@@ -168,7 +142,7 @@ func (r *Repository) CreateSupplies(supplies []entity.Supplies) error {
 }
 
 // добавление коэффициента Пирсона
-func (r *Repository) CreatePearsonPriceToVolume(coeff []entity.PearsonPriceVol) error {
+func (r *Repository) CreatePearson(coeff []entity.PearsonPriceVolMrkt) error {
 	if len(coeff) == 0 {
 		return errors.New("nothing to insert. abort")
 	}
@@ -177,13 +151,13 @@ func (r *Repository) CreatePearsonPriceToVolume(coeff []entity.PearsonPriceVol) 
 		return err
 	}
 
-	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO pearson_price_volume")
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO pearson_correlation")
 	if err != nil {
 		return err
 	}
 
 	for _, v := range coeff {
-		err := batch.Append(uuid.New(), v.Value, time.Now(), tokens[v.CryptoName].ID)
+		err := batch.Append(uuid.New(), v.Volume, v.MrktCap, time.Now(), tokens[v.CryptoName].ID)
 		if err != nil {
 			return err
 		}

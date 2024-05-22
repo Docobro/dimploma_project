@@ -3,7 +3,9 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+
+	// "io"
+	// "log"
 	"net/http"
 	"strings"
 )
@@ -23,80 +25,30 @@ func New(url string, apiKey string) *Client {
 	}
 }
 
-func (c *Client) GetTransactionData(coins []string) (map[string]uint32, error) {
-	result := make(map[string]uint32)
-	for _, v := range coins {
-		url := fmt.Sprintf("https://min-api.cryptocompare.com/data/blockchain/histo/day?fsym=%s&limit=1&api_key=%s", v, c.apiKey)
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var response TransactionResponse
-		err = json.Unmarshal(body, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(response.Data.Data) != 0 {
-			result[v] = uint32(response.Data.Data[0].TransactionCount)
-		}
+func (c *Client) GetOneMinuteFull(coin string, currencies []string) (OneMinuteResponse, error) {
+	currencyParam := strings.Join(currencies, ",")
+	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=1", c.url, coin, currencyParam)
+	fmt.Println(url)
+	resp, err := http.Get(url)
+	if err != nil {
+		return OneMinuteResponse{}, err
 	}
-	return result, nil
-}
-
-func (c *Client) GetVolumeMinuteData(coins []string) (map[string]float32, error) {
-	result := make(map[string]float32)
-	for _, v := range coins {
-		url := fmt.Sprintf("https://min-api.cryptocompare.com/data/v2/histominute?fsym=%s&tsym=USD&limit=1", v)
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var response VolumeHourResponse
-		err = json.Unmarshal(body, &response)
-		if err != nil {
-			return nil, err
-		}
-
-		if len(response.Data.Data) != 0 {
-			result[v] = float32(response.Data.Data[0].VolumeTo)
-		}
+	// if resp.StatusCode == http.StatusOK {
+	// 	bodyBytes, err := io.ReadAll(resp.Body)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	bodyString := string(bodyBytes)
+	// 	log.Println(bodyString)
+	// }
+	// Time.UnmarshalJSON: input is not a JSON string
+	defer resp.Body.Close()
+	var minuteResult OneMinuteResponse
+	if err := json.NewDecoder(resp.Body).Decode(&minuteResult); err != nil {
+		return OneMinuteResponse{}, err
 	}
-	return result, nil
+	fmt.Println(err)
+	return minuteResult, nil
 }
 
 // return currency price in map where

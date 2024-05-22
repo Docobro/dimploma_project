@@ -19,6 +19,9 @@ type Coin struct {
 	Volume24Hour float64
 	VolumeHour   float64
 	Supply       float64
+	VolumeTo     float64
+	OpenMinute   float64
+	CloseMinute  float64
 }
 
 type (
@@ -27,7 +30,20 @@ type (
 	PriceMultiFull struct {
 		RAW map[CoinType]map[CurrencyType]PriceDetails `json:"RAW"`
 	}
+	OneMinuteResponse struct {
+		RAW map[CoinType]map[CurrencyType]MinuteResponse `json:"RAW"`
+	}
 )
+
+type MinuteResponse struct {
+	Data struct {
+		Data []struct {
+			Open     float64 `json:"open"`
+			Close    float64 `json:"close"`
+			VolumeTo float64 `json:"volumeto"`
+		} `json:"Data"`
+	} `json:"Data"`
+}
 
 // USDDetails represents the details for USD
 type PriceDetails struct {
@@ -83,12 +99,7 @@ type PriceDetails struct {
 
 type Indices struct {
 	CryptoName string
-	Volume     VolumeIndex
 	Price      PriceIndex
-}
-
-type VolumeIndex struct {
-	Value float64
 }
 
 type PriceIndex struct {
@@ -100,7 +111,13 @@ type Supplies struct {
 	Value      float64
 }
 
-type PearsonPriceVol struct {
+type VolumeTo struct {
 	CryptoName string
 	Value      float64
+}
+
+type PearsonPriceVolMrkt struct {
+	CryptoName string
+	Volume     float64
+	MrktCap    float64
 }
