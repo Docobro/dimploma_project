@@ -69,20 +69,20 @@ func (r *Repository) GetCryptoFullInfo(coins []string, currencies []string) (map
 	return coinsRes, nil
 }
 
-func (r *Repository) GetOneMinuteData(coin string, currency string) (map[string]entity.Coin, error) {
-	res, err := r.client.GetOneMinuteFull(coin, currency)
+func (r *Repository) GetOneMinuteData(coin string, currency string, limit int) (map[string]entity.Coin, error) {
+	res, err := r.client.GetOneMinuteFull(coin, currency, limit)
 	if err != nil {
 		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
 	fmt.Printf("res: %v\n", res)
 	minuteRes := make(map[string]entity.Coin)
-		minuteRes[string(k)] = entity.Coin{
-			Name:        string(k),
-			VolumeTo:    res.RAW[client.CoinType(k)]["USD"].Data.Data[0].VolumeTo,
-			CloseMinute: res.RAW[client.CoinType(k)]["USD"].Data.Data[0].Close,
-			OpenMinute:  res.RAW[client.CoinType(k)]["USD"].Data.Data[0].Open,
-		}
+	minuteRes[string(coin)] = entity.Coin{
+		Name:        string(coin),
+		VolumeTo:    res.Data.Data[limit-1].VolumeTo,
+		CloseMinute: res.Data.Data[limit-1].Close,
+		OpenMinute:  res.Data.Data[limit-1].Open,
 	}
+
 	return minuteRes, nil
 }

@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// "io"
-	// "log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -25,27 +24,31 @@ func New(url string, apiKey string) *Client {
 	}
 }
 
-func (c *Client) GetOneMinuteFull(coin string, currency string) (MinuteResponse, error) {
-	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=1", c.url, coin, currency)
+func removeLastElement(response *MinuteResponse) {
+	dataLen := len(response.Data.Data)
+	if dataLen > 0 {
+		response.Data.Data = response.Data.Data[:dataLen-1]
+	}
+}
+
+func (c *Client) GetOneMinuteFull(coin string, currency string, limit int) (MinuteResponse, error) {
+	limits := strconv.Itoa(limit)
+	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=%s", c.url, coin, currency, limits)
+	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
 		return MinuteResponse{}, err
 	}
-	//  if resp.StatusCode == http.StatusOK {
-	//		bodyBytes, err := io.ReadAll(resp.Body)
-	//		if err != nil {
-	//			log.Fatal(err)
-	//		}
-	//		bodyString := string(bodyBytes)
-	//		log.Println(bodyString)
-	//	}
 	defer resp.Body.Close()
 	var minuteResult MinuteResponse
 	if err := json.NewDecoder(resp.Body).Decode(&minuteResult); err != nil {
 		fmt.Printf("failed to decode json:err:%v", err)
 		return minuteResult, err
 	}
+
+	removeLastElement(&minuteResult)
+
 	return minuteResult, nil
 }
 

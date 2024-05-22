@@ -116,6 +116,12 @@ type VolumeTo struct {
 	Value      float64
 }
 
+type MinuteData struct {
+	CryptoName string
+	Open       float64
+	Close      float64
+}
+
 type PearsonPriceVolMrkt struct {
 	CryptoName string
 	Volume     float64

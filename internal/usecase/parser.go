@@ -105,7 +105,7 @@ func (uc *Usecase) ParseVolumeMinute() error {
 	coins := []string{"BTC", "ETH"}
 	volumes := make(map[string]entity.Coin, len(coins))
 	for i := 0; i < len(coins); i++ {
-		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], "USD")
+		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], "USD", 1)
 		if err != nil {
 			return err
 		}
