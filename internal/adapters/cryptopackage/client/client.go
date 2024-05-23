@@ -34,12 +34,12 @@ func removeLastElement(response *MinuteResponse) {
 func (c *Client) GetOneMinuteFull(coin string, currency string, limit int) (MinuteResponse, error) {
 	limits := strconv.Itoa(limit)
 	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=%s", c.url, coin, currency, limits)
-	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
 		return MinuteResponse{}, err
 	}
+
 	defer resp.Body.Close()
 	var minuteResult MinuteResponse
 	if err := json.NewDecoder(resp.Body).Decode(&minuteResult); err != nil {
@@ -48,7 +48,7 @@ func (c *Client) GetOneMinuteFull(coin string, currency string, limit int) (Minu
 	}
 
 	removeLastElement(&minuteResult)
-
+	fmt.Println(minuteResult)
 	return minuteResult, nil
 }
 

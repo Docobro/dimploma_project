@@ -141,6 +141,33 @@ func (r *Repository) CreateSupplies(supplies []entity.Supplies) error {
 	return nil
 }
 
+// добавление волатильности
+func (r *Repository) CreateVolatility(volatility map[string]float64) error {
+	tokens, err := r.GetCryptoTokens()
+	if err != nil {
+		return err
+	}
+
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO volatilities")
+	if err != nil {
+		return err
+	}
+
+	for k, v := range volatility {
+		err := batch.Append(uuid.New(), tokens[k].ID, float64(v), time.Now())
+		if err != nil {
+			return err
+		}
+	}
+
+	err = batch.Send()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // добавление коэффициента Пирсона
 func (r *Repository) CreatePearson(coeff []entity.PearsonPriceVolMrkt) error {
 	if len(coeff) == 0 {

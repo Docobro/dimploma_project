@@ -127,3 +127,16 @@ func (uc *Usecase) ParseVolumeMinute() error {
 	log.Println("parse volume 1 minute done")
 	return nil
 }
+
+func (uc *Usecase) ParseVolatility() error {
+	log.Println("do parse volatility minute")
+	coins := []string{"BTC", "ETH"}
+	volatility := uc.cryptoRepo.ReturnVolatility(coins)
+
+	err := uc.storage.CreateVolatility(volatility)
+	if err != nil {
+		return err
+	}
+	log.Println("parse volatility done")
+	return nil
+}

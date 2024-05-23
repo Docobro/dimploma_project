@@ -8,5 +8,7 @@ DROP TABLE "prices";
 
 DROP TABLE "supplies";
 
+DROP TABLE "volatilities";
+
 DROP TABLE "pearson_price_volume";
 

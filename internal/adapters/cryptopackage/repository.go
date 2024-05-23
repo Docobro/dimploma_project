@@ -75,14 +75,16 @@ func (r *Repository) GetOneMinuteData(coin string, currency string, limit int) (
 		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
-	fmt.Printf("res: %v\n", res)
+	fmt.Println("negri ", res)
 	minuteRes := make(map[string]entity.Coin)
-	minuteRes[string(coin)] = entity.Coin{
-		Name:        string(coin),
-		VolumeTo:    res.Data.Data[limit-1].VolumeTo,
-		CloseMinute: res.Data.Data[limit-1].Close,
-		OpenMinute:  res.Data.Data[limit-1].Open,
+	for i := 0; i < limit; i++ {
+		minuteRes[string(coin)] = entity.Coin{
+			Name:        string(coin),
+			VolumeTo:    res.Data.Data[i].VolumeTo,
+			CloseMinute: res.Data.Data[i].Close,
+			OpenMinute:  res.Data.Data[i].Open,
+		}
 	}
-
+	fmt.Println("pidorasi ", minuteRes)
 	return minuteRes, nil
 }

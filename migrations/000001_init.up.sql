@@ -105,6 +105,25 @@ ORDER BY id
 SETTINGS index_granularity = 8192;
 
 
+-- cryptowallet.volatilities определение
+
+CREATE TABLE cryptowallet.volatilities
+(
+
+    `id` UUID,
+
+    `crypto_id` UUID,
+
+    `volatility` Float64,
+
+    `created_at` DateTime DEFAULT now()
+)
+ENGINE = MergeTree
+PRIMARY KEY tuple(id)
+ORDER BY id
+SETTINGS index_granularity = 8192;
+
+
 -- cryptowallet.pearsonpearson_price_volume определение
 
 CREATE TABLE cryptowallet.pearson_correlation
