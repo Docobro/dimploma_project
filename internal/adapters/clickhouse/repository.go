@@ -169,7 +169,7 @@ func (r *Repository) CreateVolatility(volatility map[string]float64) error {
 }
 
 // добавление коэффициента Пирсона
-func (r *Repository) CreatePearson(coeff []entity.PearsonPriceVolMrkt) error {
+func (r *Repository) CreatePearson(coeff []entity.PearsonPriceTo) error {
 	if len(coeff) == 0 {
 		return errors.New("nothing to insert. abort")
 	}
@@ -184,7 +184,7 @@ func (r *Repository) CreatePearson(coeff []entity.PearsonPriceVolMrkt) error {
 	}
 
 	for _, v := range coeff {
-		err := batch.Append(uuid.New(), v.Volume, v.MrktCap, time.Now(), tokens[v.CryptoName].ID)
+		err := batch.Append(uuid.New(), v.Volume, v.MrktCap, v.Volatility, time.Now(), tokens[v.CryptoName].ID)
 		if err != nil {
 			return err
 		}

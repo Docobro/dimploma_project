@@ -17,12 +17,14 @@ type ClickhouseRepo interface {
 	CreateVolatility(volatility map[string]float64) error
 	PearsonPriceToVolumeCorrelation(coin string) float64
 	PearsonPriceToMrktCapCorrelation(coin string) float64
-	CreatePearson(coeff []entity.PearsonPriceVolMrkt) error
+	PearsonPriceToVolatilityCorrelation(coin string) float64
+	ReturnNextPrediction(coin string) float64
+	CreatePearson(coeff []entity.PearsonPriceTo) error
 }
 
 type CryptoRepo interface {
 	GetCurrencies(coins []string) (map[string]*entity.Coin, error)
 	GetCryptoFullInfo(coins []string, currencies []string) (map[string]entity.Coin, error)
-	GetOneMinuteData(coin string, currency string, limit int) (map[string]entity.Coin, error)
+	GetOneMinuteData(coin string, currency string, limit int) ([]entity.Coin, error)
 	ReturnVolatility(coins []string) map[string]float64
 }

@@ -24,8 +24,10 @@ func (r *Repository) CreatePrices(prices []entity.Coin) error {
 
 	for _, v := range prices {
 		for _, p := range v.Prices {
+			currentTime := time.Now()
+			futureTime := currentTime.Add(10 * time.Second)
 			err := batch.Append(
-				uuid.New(), decimal.NewFromFloat(p), time.Now(), time.Now(), tokens[v.Name].ID, v.MarketCap)
+				uuid.New(), decimal.NewFromFloat(p), futureTime, currentTime, tokens[v.Name].ID, v.MarketCap, v.Predict)
 			if err != nil {
 				return err
 			}

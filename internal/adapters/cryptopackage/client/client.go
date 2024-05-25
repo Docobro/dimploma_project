@@ -48,7 +48,6 @@ func (c *Client) GetOneMinuteFull(coin string, currency string, limit int) (Minu
 	}
 
 	removeLastElement(&minuteResult)
-	fmt.Println(minuteResult)
 	return minuteResult, nil
 }
 

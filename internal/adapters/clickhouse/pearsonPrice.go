@@ -9,7 +9,7 @@ import (
 )
 
 func (r *Repository) GettingData(cryptoID string) (map[time.Time]float64, error) {
-	indexQuery := fmt.Sprintf("SELECT created_at, CAST(value AS Float64) FROM cryptowallet.prices WHERE crypto_id = '%s' ORDER BY created_at DESC LIMIT 10", cryptoID)
+	indexQuery := fmt.Sprintf("SELECT created_at, CAST(value AS Float64) FROM cryptowallet.prices WHERE crypto_id = '%s' ORDER BY created_at DESC LIMIT 360", cryptoID)
 
 	rows, err := r.conn.Query(context.Background(), indexQuery)
 	if err != nil {

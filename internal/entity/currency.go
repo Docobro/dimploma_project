@@ -22,6 +22,9 @@ type Coin struct {
 	VolumeTo     float64
 	OpenMinute   float64
 	CloseMinute  float64
+	HighMinute   float64
+	LowMinute    float64
+	Predict      float64
 }
 
 type (
@@ -38,9 +41,11 @@ type (
 type MinuteResponse struct {
 	Data struct {
 		Data []struct {
-			Close    float64 `json:"close"`
 			Open     float64 `json:"open"`
-			Volumeto float64 `json:"volumeto"`
+			Close    float64 `json:"close"`
+			High     float64 `json:"high"`
+			Low      float64 `json:"low"`
+			VolumeTo float64 `json:"volumeto"`
 		} `json:"Data"`
 	} `json:"Data"`
 }
@@ -120,10 +125,19 @@ type MinuteData struct {
 	CryptoName string
 	Open       float64
 	Close      float64
+	High       float64
+	Low        float64
 }
 
-type PearsonPriceVolMrkt struct {
+type PearsonPriceTo struct {
 	CryptoName string
 	Volume     float64
 	MrktCap    float64
+	Volatility float64
+}
+
+type Predictions struct {
+	CryptoName string
+	Value      float64
+	Mse        float64
 }

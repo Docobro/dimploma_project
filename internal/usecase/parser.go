@@ -1,24 +1,39 @@
 package usecase
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/docobro/dimploma_project/internal/entity"
 )
 
+func (uc *Usecase) CoinList() []string {
+	coins := []string{"ETH", "BTC"}
+	return coins
+}
+
 func (uc *Usecase) ParsePrices() error {
 	log.Println("do parse prices")
-	coins := []string{"ETH", "BTC"}
+	coins := uc.CoinList()
 	currencies := []string{"USD"}
-	cryptoFullInfo, err := uc.cryptoRepo.GetCryptoFullInfo(coins, currencies)
-	if err != nil {
-		return err
-	}
 	pricesReq := []entity.Coin{}
-	for _, v := range cryptoFullInfo {
-		pricesReq = append(pricesReq, v)
+
+	for i := 0; i < len(coins); i++ {
+		predict := uc.storage.ReturnNextPrediction(coins[i])
+		cryptoFullInfo, err := uc.cryptoRepo.GetCryptoFullInfo(coins, currencies)
+		if err != nil {
+			return err
+		}
+		res := entity.Coin{
+			Name:      coins[i],
+			Prices:    cryptoFullInfo[coins[i]].Prices,
+			MarketCap: cryptoFullInfo[coins[i]].MarketCap,
+			Predict:   predict,
+		}
+		pricesReq = append(pricesReq, res)
 	}
+
 	log.Println("parse prices done")
 	return uc.storage.CreatePrices(pricesReq)
 }
@@ -29,15 +44,17 @@ func (uc *Usecase) CalculatePriceIndex(coin string, timeAgo time.Duration) float
 
 func (uc *Usecase) ParsePearson() error {
 	log.Println("do parse pearson")
-	coins := []string{"BTC", "ETH"}
-	pearsonReq := []entity.PearsonPriceVolMrkt{}
+	coins := uc.CoinList()
+	pearsonReq := []entity.PearsonPriceTo{}
 	for i := 0; i < len(coins); i++ {
 		coeffPearsonVolume := uc.storage.PearsonPriceToVolumeCorrelation(coins[i])
 		coeffPersonMrktCap := uc.storage.PearsonPriceToMrktCapCorrelation(coins[i])
-		coef := entity.PearsonPriceVolMrkt{
+		coeffPersonVolatility := uc.storage.PearsonPriceToVolatilityCorrelation(coins[i])
+		coef := entity.PearsonPriceTo{
 			CryptoName: coins[i],
 			Volume:     coeffPearsonVolume,
 			MrktCap:    coeffPersonMrktCap,
+			Volatility: coeffPersonVolatility,
 		}
 		pearsonReq = append(pearsonReq, coef)
 	}
@@ -51,7 +68,7 @@ func (uc *Usecase) ParsePearson() error {
 
 func (uc *Usecase) CreateIndices() error {
 	log.Println("do parse indices")
-	coins := []string{"BTC", "ETH"}
+	coins := uc.CoinList()
 
 	indicesReq := []entity.Indices{}
 	for i := 0; i < len(coins); i++ {
@@ -77,7 +94,7 @@ func (uc *Usecase) GetPrices(coins []string, start time.Time, end time.Time) {
 
 func (uc *Usecase) ParseTotalSupply() error {
 	log.Println("do parse total supply")
-	coins := []string{"BTC", "ETH"}
+	coins := uc.CoinList()
 	currencies := []string{"USD"}
 
 	cryptoFullInfo, err := uc.cryptoRepo.GetCryptoFullInfo(coins, currencies)
@@ -102,21 +119,25 @@ func (uc *Usecase) ParseTotalSupply() error {
 
 func (uc *Usecase) ParseVolumeMinute() error {
 	log.Println("do parse volume 1 minute")
-	coins := []string{"BTC", "ETH"}
-	volumes := make(map[string]entity.Coin, len(coins))
+	coins := uc.CoinList()
+	volumes := make(map[string][]entity.Coin, len(coins))
 	for i := 0; i < len(coins); i++ {
-		volume, err := uc.cryptoRepo.GetOneMinuteData(coins[i], "USD", 1)
+		volumeData, err := uc.cryptoRepo.GetOneMinuteData(coins[i], "USD", 1)
 		if err != nil {
 			return err
 		}
-		volumes[coins[i]] = volume[coins[i]]
+		volumes[coins[i]] = volumeData
 	}
 
 	volumeReq := []entity.VolumeTo{}
 	for i := 0; i < len(coins); i++ {
+		if len(volumes[coins[i]]) == 0 {
+			return fmt.Errorf("no volume data available for coin: %s", coins[i])
+		}
+		firstVolume := volumes[coins[i]][0] // получаем первый элемент слайса
 		volume := entity.VolumeTo{
 			CryptoName: coins[i],
-			Value:      volumes[coins[i]].VolumeTo,
+			Value:      firstVolume.VolumeTo,
 		}
 		volumeReq = append(volumeReq, volume)
 	}
@@ -130,7 +151,7 @@ func (uc *Usecase) ParseVolumeMinute() error {
 
 func (uc *Usecase) ParseVolatility() error {
 	log.Println("do parse volatility minute")
-	coins := []string{"BTC", "ETH"}
+	coins := uc.CoinList()
 	volatility := uc.cryptoRepo.ReturnVolatility(coins)
 
 	err := uc.storage.CreateVolatility(volatility)
