@@ -3,10 +3,10 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Client struct {
@@ -111,4 +111,24 @@ func (m *OrderedMap) Values() []float64 {
 		values = append(values, m.Data[coin])
 	}
 	return values
+}
+
+func (c *Client) GetPrice(coins []string, currencies []string) (map[CoinType]float32, error) {
+	coinsParam := strings.Join(coins, ",")
+	currenciesParam := strings.Join(currencies, ",")
+	url := fmt.Sprintf("%s/price?fsym=%v&tsyms=%v", c.url, coinsParam, currenciesParam)
+	client := http.Client{
+		Timeout: 1 * time.Second,
+	}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var coinPrices map[CoinType]float32
+	if err := json.NewDecoder(resp.Body).Decode(&coinPrices); err != nil {
+		return nil, err
+	}
+	return coinPrices, nil
 }
