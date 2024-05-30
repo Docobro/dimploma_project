@@ -75,6 +75,7 @@ func (r *Repository) GetOneMinuteData(coin string, currency string, limit int) (
 		fmt.Printf("err: %v\n", err)
 		return nil, err
 	}
+
 	minuteRes := make([]entity.Coin, limit)
 	for i := 0; i < limit; i++ {
 		minuteRes[i] = entity.Coin{

@@ -33,9 +33,6 @@ type (
 	PriceMultiFull struct {
 		RAW map[CoinType]map[CurrencyType]PriceDetails `json:"RAW"`
 	}
-	OneMinuteResponse struct {
-		RAW map[CoinType]map[CurrencyType]MinuteResponse `json:"RAW"`
-	}
 )
 
 type MinuteResponse struct {
