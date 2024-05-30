@@ -3,6 +3,7 @@ package cryptopackage
 import (
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/docobro/dimploma_project/internal/adapters/cryptopackage/client"
 	"github.com/docobro/dimploma_project/internal/config"
@@ -15,9 +16,17 @@ type Repository struct {
 }
 
 func New(cfg config.CryptoConfig) *Repository {
-	return &Repository{
+	r := &Repository{
 		client: client.New(cfg.Url, cfg.Key),
 	}
+
+	// prefligh ping
+	_, err := r.client.GetPrice([]string{"BTC"}, []string{"USD"})
+	if err != nil {
+		log.Fatalf("failed to init crypto package err:%v", err)
+	}
+
+	return r
 }
 
 // return coins where string is coin_name
@@ -87,5 +96,6 @@ func (r *Repository) GetOneMinuteData(coin string, currency string, limit int) (
 			LowMinute:   res.Data.Data[i].Low,
 		}
 	}
+	fmt.Printf("minuteRes: %v\n", minuteRes)
 	return minuteRes, nil
 }

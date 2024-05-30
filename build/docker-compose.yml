@@ -29,6 +29,17 @@ services:
     networks:
       - crypto-network 
 
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    container_name: clickhouseDB 
+    volumes:
+      - clickhouse_vol:/var/lib/clickhouse
+    ports:
+        -  "8123:8123" 
+        -  "8124:9000" 
+        -  "9000:9000" 
+    networks:
+        - crytpo-network
 networks:
   crypto-network:
     name: app_net
