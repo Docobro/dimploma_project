@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/docobro/dimploma_project/internal/config"
@@ -36,6 +35,7 @@ func New(configpath string) (*App, error) {
 
 	// create connection to database
 	// connStrf := "clickhouse://localhost:9000?username=default&x-multi-statement=true&password=&database=cryptowallet;"
+	fmt.Println(config.SQLConfig)
 	connStr := fmt.Sprintf("clickhouse://%v:%v?username=%v&x-multi-statement=true&password=%v&database=%v;", config.SQLConfig.Host, config.SQLConfig.Port, config.User, config.Password, config.DBName)
 	pg, err := clickhouse.New(&clickhouse.Config{
 		Host:     config.SQLConfig.Host,
@@ -71,9 +71,6 @@ func New(configpath string) (*App, error) {
 	parser.Run(uc.ParseTotalSupply, time.Minute*1)
 	parser.Run(uc.ParseVolatility, time.Minute*1)
 	parser.Run(uc.ParsePearson, time.Minute*1)
+	parser.Run(uc.ParsePredictions, time.Minute*1)
 	return app, nil
-}
-
-func printAboba() {
-	log.Println("aboba")
 }

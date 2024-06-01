@@ -24,7 +24,6 @@ type Coin struct {
 	CloseMinute  float64
 	HighMinute   float64
 	LowMinute    float64
-	Predict      float64
 }
 
 type (
@@ -135,6 +134,6 @@ type PearsonPriceTo struct {
 
 type Predictions struct {
 	CryptoName string
-	Value      float64
+	Value      []float64
 	Mse        float64
 }

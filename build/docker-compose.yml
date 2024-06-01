@@ -39,7 +39,7 @@ services:
         -  "8124:9000" 
         -  "9000:9000" 
     networks:
-        - crytpo-network
+        - crypto-network
 networks:
   crypto-network:
     name: app_net
@@ -47,3 +47,6 @@ networks:
 
 volumes:
   grafana-data:
+  clickhouse_vol:
+    name: clickhouse_vol
+    external: true

@@ -96,6 +96,6 @@ func (r *Repository) GetOneMinuteData(coin string, currency string, limit int) (
 			LowMinute:   res.Data.Data[i].Low,
 		}
 	}
-	fmt.Printf("minuteRes: %v\n", minuteRes)
+
 	return minuteRes, nil
 }

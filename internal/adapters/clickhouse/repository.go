@@ -202,6 +202,53 @@ func (r *Repository) CreatePearson(coeff []entity.PearsonPriceTo) error {
 	return nil
 }
 
+func (r *Repository) UpdatePredict(pred []entity.Predictions) error {
+	if len(pred) == 0 {
+		return errors.New("nothing to update. abort")
+	}
+	tokens, err := r.GetCryptoTokens()
+	if err != nil {
+		return err
+	}
+
+	var maxIndex uint64
+	err = r.conn.QueryRow(context.Background(), "SELECT MAX(id) FROM predictions").Scan(&maxIndex)
+	if err != nil {
+		return err
+	}
+
+	batch, err := r.conn.PrepareBatch(context.Background(), "INSERT INTO predictions")
+	if err != nil {
+		return err
+	}
+
+	index := maxIndex + 1
+
+	for _, v := range pred {
+		currentTime := time.Now()
+		for _, value := range v.Value {
+			futureTime := currentTime.Add(10 * time.Second)
+			err := batch.Append(index, value, futureTime, tokens[v.CryptoName].ID)
+			if err != nil {
+				return err
+			}
+			currentTime = futureTime
+			index++
+		}
+	}
+
+	err = batch.Send()
+	if err != nil {
+		return err
+	}
+
+	if ok := batch.IsSent(); !ok {
+		return errors.New("batch is not sent")
+	}
+
+	return nil
+}
+
 type rf struct {
 	Value     decimal.Decimal `ch:"value"`
 	Name      string          `ch:"name"`

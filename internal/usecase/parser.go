@@ -20,7 +20,6 @@ func (uc *Usecase) ParsePrices() error {
 	pricesReq := []entity.Coin{}
 
 	for i := 0; i < len(coins); i++ {
-		predict := uc.storage.ReturnNextPrediction(coins[i])
 		cryptoFullInfo, err := uc.cryptoRepo.GetCryptoFullInfo(coins, currencies)
 		if err != nil {
 			return err
@@ -29,7 +28,6 @@ func (uc *Usecase) ParsePrices() error {
 			Name:      coins[i],
 			Prices:    cryptoFullInfo[coins[i]].Prices,
 			MarketCap: cryptoFullInfo[coins[i]].MarketCap,
-			Predict:   predict,
 		}
 		pricesReq = append(pricesReq, res)
 	}
@@ -159,5 +157,27 @@ func (uc *Usecase) ParseVolatility() error {
 		return err
 	}
 	log.Println("parse volatility done")
+	return nil
+}
+
+func (uc *Usecase) ParsePredictions() error {
+	log.Println("do parse predictions")
+	coins := uc.CoinList()
+	res := []entity.Predictions{}
+	for i := 0; i < len(coins); i++ {
+		predict, mse := uc.storage.ReturnPredictions(coins[i])
+		pred := entity.Predictions{
+			CryptoName: coins[i],
+			Value:      predict,
+			Mse:        mse,
+		}
+		res = append(res, pred)
+	}
+
+	err := uc.storage.UpdatePredict(res)
+	if err != nil {
+		return err
+	}
+	log.Println("parse predictions done")
 	return nil
 }

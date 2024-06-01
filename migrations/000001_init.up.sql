@@ -53,15 +53,11 @@ CREATE TABLE cryptowallet.prices
     `value` Decimal(18,
  2),
 
-    `predict_time` DateTime,
-
     `created_at` DateTime DEFAULT now(),
 
     `crypto_id` UUID,
 
     `market_cap` Float64,
-
-    `predict` Float64
 )
 ENGINE = MergeTree
 PRIMARY KEY tuple(id)
@@ -137,7 +133,7 @@ CREATE TABLE cryptowallet.pearson_correlation
 
     `priceToMarketCap` Float64,
 
-    `priceToVolatility` Float64
+    `priceToVolatility` Float64,
 
     `created_at` DateTime DEFAULT now(),
 
@@ -154,7 +150,7 @@ SETTINGS index_granularity = 8192;
 CREATE TABLE cryptowallet.predictions
 (
 
-    `id` UUID,
+    `id` UInt64,
 
     `value` Float64,
 

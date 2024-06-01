@@ -7,10 +7,10 @@ import (
 )
 
 type ClickhouseRepo interface {
+	// example BTC, time.Hour * 1 (priceIndex1H)
 	CreatePrices(prices []entity.Coin) error
 	GetPrices(coins []string, start time.Time, end time.Time) interface{}
 	CreateIndices(indices []entity.Indices) error
-	// example BTC, time.Hour * 1 (priceIndex1H)
 	CalculatePriceIndex(coin string, timeAgo time.Duration) float64
 	CreateVolumes1m(volume []entity.VolumeTo) error
 	CreateSupplies(supplies []entity.Supplies) error
@@ -18,8 +18,9 @@ type ClickhouseRepo interface {
 	PearsonPriceToVolumeCorrelation(coin string) float64
 	PearsonPriceToMrktCapCorrelation(coin string) float64
 	PearsonPriceToVolatilityCorrelation(coin string) float64
-	ReturnNextPrediction(coin string) float64
+	ReturnPredictions(coin string) ([]float64, float64)
 	CreatePearson(coeff []entity.PearsonPriceTo) error
+	UpdatePredict(pred []entity.Predictions) error
 }
 
 type CryptoRepo interface {

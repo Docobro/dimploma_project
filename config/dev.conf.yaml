@@ -15,7 +15,7 @@ crypto:
   key: "556ea0dc84e672adf9a87bdf13bafdbf08579a4a45161b3d1fa5b2db00c6bf77"
 
 sql:
-  host: "localhost"
+  host: "clickhouseDB"
   port: "9000"
   database: "cryptowallet"
   user: "default"

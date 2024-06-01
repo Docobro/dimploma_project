@@ -6,7 +6,7 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-func (r *Repository) ReturnNextPrediction(coin string) float64 {
+func (r *Repository) ReturnPredictions(coin string) ([]float64, float64) {
 	var Aprices, volumes, volatilities, corrPriceVolume, corrPriceVolatility map[int]float64
 	name_value_1, name_value_2, name_value_4 := "value", "trade_volume", "volatility"
 	nameBase_1, nameBase_2, nameBase_4 := "prices", "trade_volume_1m", "volatilities"
@@ -23,8 +23,8 @@ func (r *Repository) ReturnNextPrediction(coin string) float64 {
 	corrPriceVolume = r.GettingDataFromDB(coin, valuePearson_1, basePearson, limit_5)
 	corrPriceVolatility = r.GettingDataFromDB(coin, valuePearson_3, basePearson, limit_5)
 
-	prices := make(map[int]float64, 60)
-	for i := 0; i < 60; i++ {
+	prices := make(map[int]float64, limit_2)
+	for i := 0; i < limit_2; i++ {
 		var sum float64
 		for j := 0; j < 6; j++ {
 			sum += Aprices[i*6+j]
@@ -32,29 +32,54 @@ func (r *Repository) ReturnNextPrediction(coin string) float64 {
 		average := sum / 6
 		prices[i] = average
 	}
+	if len(volumes) != limit_2 {
+		fmt.Println("Недостаточно данных для подсчета предиктов криптовалюты ", coin, ", необходимо дождаться ", limit_2, " записей для цены, объема и волатильности, текущее значение: ", len(volumes))
+		return nil, 0
+	}
 
-	// Используем все данные для обучения модели
-	trainPrices := make([]float64, len(volumes))
-	trainVolumes := make([]float64, len(volumes))
-	trainVolatilities := make([]float64, len(volumes))
+	fmt.Println("dsadasdas", len(volumes), len(prices), len(Aprices), len(volatilities))
 
-	for i := 0; i < len(volumes); i++ {
+	// Разделение данных на обучающую и тестовую выборки (70% на обучение, 30% на тестирование)
+	trainSize := int(float64(len(volumes)) * 0.70)
+	testSize := len(volumes) - trainSize
+
+	trainPrices := make([]float64, trainSize)
+	testPrices := make([]float64, testSize)
+
+	trainVolumes := make([]float64, trainSize)
+	testVolumes := make([]float64, testSize)
+
+	trainVolatilities := make([]float64, trainSize)
+	testVolatilities := make([]float64, testSize)
+
+	// Заполнение обучающих и тестовых данных
+	for i := 0; i < trainSize; i++ {
 		trainPrices[i] = prices[i]
 		trainVolumes[i] = volumes[i]
 		trainVolatilities[i] = volatilities[i]
 	}
 
-	// Создание регрессионной модели на всех данных
+	for i := trainSize; i < len(volumes); i++ {
+		testPrices[i-trainSize] = prices[i]
+		testVolumes[i-trainSize] = volumes[i]
+		testVolatilities[i-trainSize] = volatilities[i]
+	}
+
+	// Создание регрессионной модели на обучающих данных
 	beta := regressionModel(trainVolumes, trainVolatilities, trainPrices, corrPriceVolume[0], corrPriceVolatility[0])
 
-	// Прогнозирование следующей цены
-	nextVolume := volumes[len(volumes)-1]
-	nextVolatility := volatilities[len(volatilities)-1]
+	// Прогнозирование на тестовых данных
+	testFeatures := mat.NewDense(testSize, 2, nil)
+	for i := 0; i < testSize; i++ {
+		testFeatures.Set(i, 0, testVolumes[i])
+		testFeatures.Set(i, 1, testVolatilities[i])
+	}
 
-	nextFeatures := mat.NewVecDense(2, []float64{nextVolume, nextVolatility})
-	nextPrediction := mat.Dot(nextFeatures, beta)
+	predictions := predict(testFeatures, beta)
 
-	return nextPrediction
+	// Оценка точности модели на тестовых данных
+	mse := evaluate(predictions, testPrices)
+	return predictions, mse
 }
 
 // Функция regressionModel строит регрессионную модель на основе переданных признаков и цен,
@@ -78,42 +103,28 @@ func regressionModel(volumes, volatilities, prices []float64, corrPriceVolume, c
 	// Создание матрицы-диагонали с коэффициентами корреляции
 	corrMatrix := mat.NewDiagDense(2, []float64{corrPriceVolume, corrPriceVolatility})
 
-	// Выведем значения коэффициентов корреляции Пирсона
-	fmt.Println("Коэффициенты корреляции Пирсона:")
-	fmt.Printf("Price-Volume: %f\n", corrPriceVolume)
-	fmt.Printf("Price-Volatility: %f\n", corrPriceVolatility)
+	// // Выведем значения коэффициентов корреляции Пирсона
+	// fmt.Println("Коэффициенты корреляции Пирсона:")
+	// fmt.Printf("Price-Volume: %f\n", corrPriceVolume)
+	// fmt.Printf("Price-Volatility: %f\n", corrPriceVolatility)
 
-	// Вывод изначальных данных
-	fmt.Println("Данные:")
-	fmt.Printf("Price: %f\n", prices)
-	fmt.Printf("Volume: %f\n", volumes)
-	fmt.Printf("Volatility: %f\n", volatilities)
-
-	// Выведем содержимое матрицы-диагонали
-	fmt.Println("Матрица-диагональ с коэффициентами корреляции:")
-	fmt.Println(mat.Formatted(corrMatrix))
+	// // Вывод изначальных данных
+	// fmt.Println("Данные:")
+	// fmt.Printf("Price: %f\n", prices)
+	// fmt.Printf("VOlume: %f\n", volumes)
+	// fmt.Printf("Volatility: %f\n", volatilities)
 
 	// Вычислим (X^T * X + CorrelationMatrix)
 	var xtxPlusCorr mat.Dense
 	xtxPlusCorr.Mul(featuresT, features)
 	xtxPlusCorr.Add(&xtxPlusCorr, corrMatrix)
 
-	// Выведем содержимое матрицы X^T * X + CorrelationMatrix
-	fmt.Println("Матрица (X^T * X + CorrelationMatrix):")
-	fmt.Println(mat.Formatted(&xtxPlusCorr, mat.Prefix(""), mat.Squeeze()))
-
 	// Вычислим (X^T * y)
 	var xty mat.VecDense
 	xty.MulVec(featuresT, target)
 
-	// Выведем содержимое матрицы (X^T * y)
-	fmt.Println("Матрица (X^T * y):")
-	fmt.Println(mat.Formatted(&xty, mat.Prefix(""), mat.Squeeze()))
-
 	// Решим систему уравнений (X^T * X + CorrelationMatrix) * beta = (X^T * y)
 	var beta mat.VecDense
-
-	fmt.Println("beta: ", beta)
 
 	err := beta.SolveVec(&xtxPlusCorr, &xty)
 	if err != nil {
@@ -121,9 +132,30 @@ func regressionModel(volumes, volatilities, prices []float64, corrPriceVolume, c
 		return nil
 	}
 
-	// Выведем коэффициенты регрессии
-	fmt.Println("Коэффициенты регрессии:")
-	fmt.Println(mat.Formatted(&beta, mat.Prefix(""), mat.Squeeze()))
-
 	return &beta
+}
+
+// Функция predict используется для прогнозирования цен на основе переданных признаков и коэффициентов регрессии.
+func predict(features *mat.Dense, beta *mat.VecDense) []float64 {
+	rows, _ := features.Dims()
+	predictions := make([]float64, rows)
+	for i := 0; i < rows; i++ {
+		row := features.RowView(i)
+		predictions[i] = mat.Dot(row, beta)
+	}
+	fmt.Println("Прогнозируемые цены:", predictions)
+	return predictions
+}
+
+// Функция evaluate используется для оценки точности модели на тестовых данных.
+// Рассчитывается среднеквадратичная ошибка (MSE).
+func evaluate(predictions, actual []float64) float64 {
+	var sumError float64
+	for i := 0; i < len(predictions); i++ {
+		error := predictions[i] - actual[i]
+		sumError += error * error
+	}
+	mse := sumError / float64(len(predictions))
+	fmt.Printf("Среднеквадратичная ошибка (MSE): %f\n", mse)
+	return mse
 }
