@@ -2,15 +2,31 @@ package clickhouse
 
 import (
 	"fmt"
+	"sort"
 
 	"gonum.org/v1/gonum/mat"
 )
 
+// Function to convert a map[int]float64 to a sorted []float64 based on the keys
+func mapToSortedSlice(data map[int]float64) []float64 {
+	keys := make([]int, 0, len(data))
+	for k := range data {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	sortedData := make([]float64, len(data))
+	for i, k := range keys {
+		sortedData[i] = data[k]
+	}
+	return sortedData
+}
+
 func (r *Repository) ReturnPredictions(coin string) ([]float64, float64) {
 	var Aprices, volumes, volatilities, corrPriceVolume, corrPriceVolatility map[int]float64
-	name_value_1, name_value_2, name_value_4 := "value", "trade_volume", "volatility"
-	nameBase_1, nameBase_2, nameBase_4 := "prices", "trade_volume_1m", "volatilities"
-	limit_1, limit_2, limit_4 := 360, 60, 60
+	name_value_1, name_value_2, name_value_4 := "price_index", "trade_volume", "volatility"
+	nameBase_1, nameBase_2, nameBase_4 := "indices", "trade_volume_1m", "volatilities"
+	limit_1, limit_2, limit_4 := 36, 6, 6
 
 	Aprices = r.GettingDataFromDB(coin, name_value_1, nameBase_1, limit_1)
 	volumes = r.GettingDataFromDB(coin, name_value_2, nameBase_2, limit_2)
@@ -37,54 +53,37 @@ func (r *Repository) ReturnPredictions(coin string) ([]float64, float64) {
 		return nil, 0
 	}
 
-	fmt.Println("dsadasdas", len(volumes), len(prices), len(Aprices), len(volatilities))
+	// Преобразование map в отсортированные срезы
+	priceSlice := mapToSortedSlice(prices)
+	volumeSlice := mapToSortedSlice(volumes)
+	volatilitySlice := mapToSortedSlice(volatilities)
 
-	// Разделение данных на обучающую и тестовую выборки (70% на обучение, 30% на тестирование)
-	trainSize := int(float64(len(volumes)) * 0.70)
-	testSize := len(volumes) - trainSize
-
-	trainPrices := make([]float64, trainSize)
-	testPrices := make([]float64, testSize)
-
-	trainVolumes := make([]float64, trainSize)
-	testVolumes := make([]float64, testSize)
-
-	trainVolatilities := make([]float64, trainSize)
-	testVolatilities := make([]float64, testSize)
-
-	// Заполнение обучающих и тестовых данных
-	for i := 0; i < trainSize; i++ {
-		trainPrices[i] = prices[i]
-		trainVolumes[i] = volumes[i]
-		trainVolatilities[i] = volatilities[i]
+	// Присваивание весов для последних данных
+	weights := make([]float64, limit_2)
+	for i := 0; i < limit_2; i++ {
+		weights[i] = 1.0 + float64(i)/float64(limit_2)
 	}
 
-	for i := trainSize; i < len(volumes); i++ {
-		testPrices[i-trainSize] = prices[i]
-		testVolumes[i-trainSize] = volumes[i]
-		testVolatilities[i-trainSize] = volatilities[i]
+	// Создание регрессионной модели с учетом весов
+	beta := weightedRegressionModel(volumeSlice, volatilitySlice, priceSlice, corrPriceVolume[0], corrPriceVolatility[0], weights)
+
+	// Прогнозирование на тех же данных, которые использовались для обучения
+	features := mat.NewDense(limit_2, 2, nil)
+	for i := 0; i < limit_2; i++ {
+		features.Set(i, 0, volumeSlice[i])
+		features.Set(i, 1, volatilitySlice[i])
 	}
 
-	// Создание регрессионной модели на обучающих данных
-	beta := regressionModel(trainVolumes, trainVolatilities, trainPrices, corrPriceVolume[0], corrPriceVolatility[0])
+	predictions := predict(features, beta)
 
-	// Прогнозирование на тестовых данных
-	testFeatures := mat.NewDense(testSize, 2, nil)
-	for i := 0; i < testSize; i++ {
-		testFeatures.Set(i, 0, testVolumes[i])
-		testFeatures.Set(i, 1, testVolatilities[i])
-	}
-
-	predictions := predict(testFeatures, beta)
-
-	// Оценка точности модели на тестовых данных
-	mse := evaluate(predictions, testPrices)
+	// Оценка точности модели
+	mse := evaluate(predictions, priceSlice)
 	return predictions, mse
 }
 
-// Функция regressionModel строит регрессионную модель на основе переданных признаков и цен,
+// Функция weightedRegressionModel строит регрессионную модель с учетом весов на основе переданных признаков и цен,
 // включая коэффициенты корреляции Пирсона. Возвращает вектор коэффициентов регрессии.
-func regressionModel(volumes, volatilities, prices []float64, corrPriceVolume, corrPriceVolatility float64) *mat.VecDense {
+func weightedRegressionModel(volumes, volatilities, prices []float64, corrPriceVolume, corrPriceVolatility float64, weights []float64) *mat.VecDense {
 	// Соберем обучающие данные в матрицу признаков
 	features := mat.NewDense(len(prices), 2, nil)
 	for i := 0; i < len(prices); i++ {
@@ -92,36 +91,36 @@ func regressionModel(volumes, volatilities, prices []float64, corrPriceVolume, c
 		features.Set(i, 1, volatilities[i])
 	}
 
-	// Вектор обучающих цен
-	target := mat.NewVecDense(len(prices), prices)
+	// Применение весов к признакам и целевым значениям
+	weightedFeatures := mat.NewDense(len(prices), 2, nil)
+	weightedTarget := mat.NewVecDense(len(prices), nil)
+	for i := 0; i < len(prices); i++ {
+		weightedFeatures.Set(i, 0, volumes[i]*weights[i])
+		weightedFeatures.Set(i, 1, volatilities[i]*weights[i])
+		weightedTarget.SetVec(i, prices[i]*weights[i])
+	}
 
 	// Создадим транспонированную матрицу признаков
-	rows, cols := features.Dims()
+	rows, cols := weightedFeatures.Dims()
 	featuresT := mat.NewDense(cols, rows, nil)
-	featuresT.Copy(features.T())
+	featuresT.Copy(weightedFeatures.T())
 
 	// Создание матрицы-диагонали с коэффициентами корреляции
 	corrMatrix := mat.NewDiagDense(2, []float64{corrPriceVolume, corrPriceVolatility})
 
-	// // Выведем значения коэффициентов корреляции Пирсона
-	// fmt.Println("Коэффициенты корреляции Пирсона:")
-	// fmt.Printf("Price-Volume: %f\n", corrPriceVolume)
-	// fmt.Printf("Price-Volatility: %f\n", corrPriceVolatility)
-
-	// // Вывод изначальных данных
-	// fmt.Println("Данные:")
-	// fmt.Printf("Price: %f\n", prices)
-	// fmt.Printf("VOlume: %f\n", volumes)
-	// fmt.Printf("Volatility: %f\n", volatilities)
+	// Выведем значения коэффициентов корреляции Пирсона
+	fmt.Println("Коэффициенты корреляции Пирсона:")
+	fmt.Printf("Price-Volume: %f\n", corrPriceVolume)
+	fmt.Printf("Price-Volatility: %f\n", corrPriceVolatility)
 
 	// Вычислим (X^T * X + CorrelationMatrix)
 	var xtxPlusCorr mat.Dense
-	xtxPlusCorr.Mul(featuresT, features)
+	xtxPlusCorr.Mul(featuresT, weightedFeatures)
 	xtxPlusCorr.Add(&xtxPlusCorr, corrMatrix)
 
 	// Вычислим (X^T * y)
 	var xty mat.VecDense
-	xty.MulVec(featuresT, target)
+	xty.MulVec(featuresT, weightedTarget)
 
 	// Решим систему уравнений (X^T * X + CorrelationMatrix) * beta = (X^T * y)
 	var beta mat.VecDense
@@ -147,7 +146,7 @@ func predict(features *mat.Dense, beta *mat.VecDense) []float64 {
 	return predictions
 }
 
-// Функция evaluate используется для оценки точности модели на тестовых данных.
+// Функция evaluate используется для оценки точности модели.
 // Рассчитывается среднеквадратичная ошибка (MSE).
 func evaluate(predictions, actual []float64) float64 {
 	var sumError float64

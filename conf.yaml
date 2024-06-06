@@ -12,7 +12,7 @@ http:
 
 crypto:
   url: "https://min-api.cryptocompare.com/data"
-  key: "1d83232e5c10b78e579ec38c6ebdab7fdaa0ea03ae2aa7289bac8efc2b065d64"
+  key: "556ea0dc84e672adf9a87bdf13bafdbf08579a4a45161b3d1fa5b2db00c6bf77"
 
 sql:
   host: "localhost"

@@ -3,6 +3,8 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -125,9 +127,15 @@ func (c *Client) GetPrice(coins []string, currencies []string) (map[CoinType]flo
 		return nil, err
 	}
 	defer resp.Body.Close()
-
+	fmt.Println(url)
 	var coinPrices map[CoinType]float32
-	if err := json.NewDecoder(resp.Body).Decode(&coinPrices); err != nil {
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("aaaa", err)
+	}
+
+	fmt.Printf("bodyBytes: %v\n", string(bodyBytes))
+	if err := json.Unmarshal(bodyBytes, &coinPrices); err != nil {
 		return nil, err
 	}
 	return coinPrices, nil
