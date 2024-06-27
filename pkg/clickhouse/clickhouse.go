@@ -26,9 +26,9 @@ func New(c *Config) (*Clickhouse, error) {
 		conn, err = clickhouse.Open(&clickhouse.Options{
 			Addr: []string{fmt.Sprintf("%s:%s", c.Host, c.Port)},
 			Auth: clickhouse.Auth{
-				Database: "cryptowallet",
-				Username: "default",
-				Password: "",
+				Database: c.Database,
+				Username: c.Username,
+				Password: c.Password,
 			},
 			ClientInfo: clickhouse.ClientInfo{
 				Products: []struct {

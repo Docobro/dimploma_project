@@ -1,0 +1,15 @@
+[Unit]
+Description=Crypto logic parser 
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/apps/crypto-scanner
+ExecStart=/root/apps/crypto-scanner/crypto_building
+Restart=always
+RestartSec=4
+StandardOutput=inherit
+EnvironmentFile=/root/apps/crypto-scanner/.env
+
+[Install]
+WantedBy=multi-user.target

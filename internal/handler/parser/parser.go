@@ -1,12 +1,12 @@
 package parser
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/docobro/dimploma_project/internal/entity"
-	"github.com/docobro/dimploma_project/internal/handler/manager"
+	"github.com/docobro/dimploma_project/pkg/logger"
+	"go.uber.org/zap"
 )
 
 type UseCase interface {
@@ -18,23 +18,20 @@ type UseCase interface {
 // usecase operation with things that we will parse per time
 // usecase операции будут являться объектом парсинга сервиса Parser
 
-// mn manager that will be appending items in local store. then bathing into database store
-// mn manager оператор который будет собирать данные из parser в локальное хранилище а далее раз в n веремени отправлять эти данные кучей в базу данных
-
 // parser does not use own append function he operates with manager append ops
 type Parser struct {
-	mn      *manager.Manager
 	wg      *sync.WaitGroup
 	quit    chan struct{}
 	mu      sync.Mutex
 	running bool
+	l       logger.Logger
 }
 
-func NewParser(mn *manager.Manager) *Parser {
+func NewParser(l logger.Logger) *Parser {
 	return &Parser{
-		mn:   mn,
 		wg:   &sync.WaitGroup{},
 		quit: make(chan struct{}),
+		l:    l,
 	}
 }
 
@@ -55,7 +52,7 @@ func (j *Parser) Run(fn func() error, flushInterval time.Duration) {
 			case <-time.After(flushInterval):
 				err := fn()
 				if err != nil {
-					fmt.Printf("err: %v\n", err)
+					j.l.Info("error", zap.Error(err))
 				}
 			case <-j.quit: // Check if the quit signal is received
 				return

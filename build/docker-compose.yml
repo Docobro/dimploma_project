@@ -1,25 +1,14 @@
 version: "3.7"
 services:
   crypto:
-    image: crypto-scanner 
+    image: crypto-scanner:latest 
     container_name: vlad-crypto 
     ports:
-      - ${API_HOST}:${API_HOST}
+      - "8005:8005"
     volumes:
-      - ../docs:/app/docs
       - ../migrations:/app/migrations
     networks:
       - crypto-network 
-
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "19090:9090"
-    networks:
-      - crypto-network 
-
   grafana:
     image: grafana/grafana-oss:9.4.3
     ports:
@@ -38,15 +27,18 @@ services:
         -  "8123:8123" 
         -  "8124:9000" 
         -  "9000:9000" 
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: securepassword123
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     networks:
         - crypto-network
 networks:
   crypto-network:
     name: app_net
-    external: true
 
 volumes:
   grafana-data:
   clickhouse_vol:
     name: clickhouse_vol
-    external: true

@@ -19,7 +19,7 @@ sql:
   port: "8124"
   database: "cryptowallet"
   user: "default"
-  password: ""
+  password: "securepassword123"
   read_timeout: "4s"
   write_timeout: "4s"
   timeout: "4s"

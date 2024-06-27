@@ -21,6 +21,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = a.StartParser()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	err = gracy.Wait()
 	if err != nil {
 		log.Fatal("failed to gracefully shutdown")

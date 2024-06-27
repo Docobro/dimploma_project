@@ -21,11 +21,13 @@ func New(cfg config.CryptoConfig) *Repository {
 	}
 
 	// prefligh ping
+	log.Println("waiting to ping crypto repo...")
 	_, err := r.client.GetPrice([]string{"BTC"}, []string{"USD"})
 	if err != nil {
 		log.Fatalf("failed to init crypto package err:%v", err)
 	}
 
+	log.Println("crypto repo ping success")
 	return r
 }
 

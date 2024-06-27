@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,15 +15,28 @@ import (
 type Client struct {
 	url    string
 	apiKey string
+	client *http.Client
 }
 
 func New(url string, apiKey string) *Client {
 	if url == "" {
 		url = defualtURl
 	}
+	t := &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout:   60 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		// We use ABSURDLY large keys, and should probably not.
+		TLSHandshakeTimeout: 60 * time.Second,
+	}
+	c := &http.Client{
+		Transport: t,
+	}
 	return &Client{
 		url:    url,
 		apiKey: apiKey,
+		client: c,
 	}
 }
 
@@ -36,7 +50,7 @@ func removeLastElement(response *MinuteResponse) {
 func (c *Client) GetOneMinuteFull(coin string, currency string, limit int) (MinuteResponse, error) {
 	limits := strconv.Itoa(limit)
 	url := fmt.Sprintf("%s/v2/histominute?fsym=%s&tsym=%s&limit=%s", c.url, coin, currency, limits)
-	resp, err := http.Get(url)
+	resp, err := c.client.Get(url)
 	if err != nil {
 		fmt.Println(err)
 		return MinuteResponse{}, err
@@ -60,7 +74,7 @@ func (c *Client) GetPriceMultiFull(coins []string, currencies []string) (PriceMu
 	coinsParam := strings.Join(coins, ",")
 	currencyParam := strings.Join(currencies, ",")
 	url := fmt.Sprintf("%s/pricemultifull?fsyms=%v&tsyms=%v", c.url, coinsParam, currencyParam)
-	resp, err := http.Get(url)
+	resp, err := c.client.Get(url)
 	if err != nil {
 		return PriceMultiFull{}, err
 	}
@@ -77,7 +91,7 @@ func (c *Client) GetPriceMultiFull(coins []string, currencies []string) (PriceMu
 func (c *Client) GetCurrentPrices(coins []string) (map[string]Coin, error) {
 	coinsParam := strings.Join(coins, ",")
 	url := fmt.Sprintf("%s/pricemulti?fsyms=%s&tsyms=USD", c.url, coinsParam)
-	resp, err := http.Get(url)
+	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -119,15 +133,11 @@ func (c *Client) GetPrice(coins []string, currencies []string) (map[CoinType]flo
 	coinsParam := strings.Join(coins, ",")
 	currenciesParam := strings.Join(currencies, ",")
 	url := fmt.Sprintf("%s/price?fsym=%v&tsyms=%v", c.url, coinsParam, currenciesParam)
-	client := http.Client{
-		Timeout: 1 * time.Second,
-	}
-	resp, err := client.Get(url)
+	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	fmt.Println(url)
 	var coinPrices map[CoinType]float32
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
